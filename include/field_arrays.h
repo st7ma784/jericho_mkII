@@ -10,6 +10,7 @@
 #pragma once
 
 #include "platform.h"
+
 #include <cstddef>
 
 namespace jericho {
@@ -29,51 +30,51 @@ namespace jericho {
  * - All arrays allocated on GPU device memory
  */
 class FieldArrays {
-public:
+  public:
     // Grid dimensions
-    int nx;              ///< Grid points in x (including ghost cells)
-    int ny;              ///< Grid points in y (including ghost cells)
-    int nx_local;        ///< Local grid points in x (excluding ghosts)
-    int ny_local;        ///< Local grid points in y (excluding ghosts)
-    int nghost;          ///< Number of ghost cell layers (typically 2)
+    int nx;       ///< Grid points in x (including ghost cells)
+    int ny;       ///< Grid points in y (including ghost cells)
+    int nx_local; ///< Local grid points in x (excluding ghosts)
+    int ny_local; ///< Local grid points in y (excluding ghosts)
+    int nghost;   ///< Number of ghost cell layers (typically 2)
 
     // Spatial parameters
-    double dx;           ///< Grid spacing in x [m]
-    double dy;           ///< Grid spacing in y [m]
-    double x_min;        ///< Domain minimum x [m]
-    double y_min;        ///< Domain minimum y [m]
+    double dx;    ///< Grid spacing in x [m]
+    double dy;    ///< Grid spacing in y [m]
+    double x_min; ///< Domain minimum x [m]
+    double y_min; ///< Domain minimum y [m]
 
     // Electromagnetic fields (device pointers)
     // Electric field
-    double* Ex;          ///< Electric field x-component [V/m]
-    double* Ey;          ///< Electric field y-component [V/m]
+    double* Ex; ///< Electric field x-component [V/m]
+    double* Ey; ///< Electric field y-component [V/m]
 
     // Magnetic field
-    double* Bz;          ///< Magnetic field z-component [T]
+    double* Bz; ///< Magnetic field z-component [T]
 
     // Plasma quantities (from particle-to-grid)
-    double* charge_density;  ///< Charge density [C/m³]
-    double* Jx;              ///< Current density x [A/m²]
-    double* Jy;              ///< Current density y [A/m²]
-    double* Ux;              ///< Ion flow velocity x [m/s]
-    double* Uy;              ///< Ion flow velocity y [m/s]
+    double* charge_density; ///< Charge density [C/m³]
+    double* Jx;             ///< Current density x [A/m²]
+    double* Jy;             ///< Current density y [A/m²]
+    double* Ux;             ///< Ion flow velocity x [m/s]
+    double* Uy;             ///< Ion flow velocity y [m/s]
 
     // CAM (Current Advance Method) coefficients
-    double* Lambda;      ///< CAM Lambda coefficient
-    double* Gamma_x;     ///< CAM Gamma_x coefficient
-    double* Gamma_y;     ///< CAM Gamma_y coefficient
+    double* Lambda;  ///< CAM Lambda coefficient
+    double* Gamma_x; ///< CAM Gamma_x coefficient
+    double* Gamma_y; ///< CAM Gamma_y coefficient
 
     // Background/initial fields (constant)
-    double* Ex_back;     ///< Background electric field x
-    double* Ey_back;     ///< Background electric field y
-    double* Bz_back;     ///< Background magnetic field z
+    double* Ex_back; ///< Background electric field x
+    double* Ey_back; ///< Background electric field y
+    double* Bz_back; ///< Background magnetic field z
 
     // Temporary arrays for field solver
-    double* tmp1;        ///< Scratch array 1
-    double* tmp2;        ///< Scratch array 2
-    double* tmp3;        ///< Scratch array 3
+    double* tmp1; ///< Scratch array 1
+    double* tmp2; ///< Scratch array 2
+    double* tmp3; ///< Scratch array 3
 
-    int device_id;       ///< CUDA device where arrays reside
+    int device_id; ///< CUDA device where arrays reside
 
     // ==========================================================================
     // Constructors / Destructors
@@ -91,9 +92,8 @@ public:
      * @param y_min Domain minimum y
      * @param device_id CUDA device ID
      */
-    FieldArrays(int nx_local, int ny_local, int nghost,
-               double dx, double dy, double x_min, double y_min,
-               int device_id = 0);
+    FieldArrays(int nx_local, int ny_local, int nghost, double dx, double dy, double x_min,
+                double y_min, int device_id = 0);
 
     /**
      * @brief Destructor - free GPU memory
@@ -137,7 +137,9 @@ public:
     /**
      * @brief Get total number of grid points (including ghosts)
      */
-    size_t get_total_points() const { return nx * ny; }
+    size_t get_total_points() const {
+        return nx * ny;
+    }
 
     /**
      * @brief Get memory usage in bytes
@@ -190,12 +192,12 @@ public:
 // ==============================================================================
 
 namespace constants {
-    constexpr double mu_0 = 1.25663706212e-6;  ///< Permeability of free space [H/m]
-    constexpr double epsilon_0 = 8.8541878128e-12;  ///< Permittivity of free space [F/m]
-    constexpr double c = 299792458.0;  ///< Speed of light [m/s]
-    constexpr double e = 1.602176634e-19;  ///< Elementary charge [C]
-    constexpr double m_p = 1.67262192369e-27;  ///< Proton mass [kg]
-    constexpr double k_B = 1.380649e-23;  ///< Boltzmann constant [J/K]
-}
+constexpr double mu_0 = 1.25663706212e-6;      ///< Permeability of free space [H/m]
+constexpr double epsilon_0 = 8.8541878128e-12; ///< Permittivity of free space [F/m]
+constexpr double c = 299792458.0;              ///< Speed of light [m/s]
+constexpr double e = 1.602176634e-19;          ///< Elementary charge [C]
+constexpr double m_p = 1.67262192369e-27;      ///< Proton mass [kg]
+constexpr double k_B = 1.380649e-23;           ///< Boltzmann constant [J/K]
+} // namespace constants
 
 } // namespace jericho

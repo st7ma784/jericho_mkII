@@ -13,12 +13,14 @@
 #pragma once
 
 #include "field_arrays.h"
-#include "particle_buffer.h"
 #include "mpi_manager.h"
+#include "particle_buffer.h"
+
 #include <hdf5.h>
+
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace jericho {
 
@@ -55,15 +57,15 @@ namespace jericho {
  * ```
  */
 class IOManager {
-public:
+  public:
     // Output configuration
-    std::string output_dir;         ///< Output directory path
-    std::string checkpoint_dir;     ///< Checkpoint directory path
-    int field_cadence;              ///< Output fields every N steps
-    int particle_cadence;           ///< Output particles every N steps
-    int checkpoint_cadence;         ///< Checkpoint every N steps
-    bool compress_output;           ///< Enable HDF5 compression
-    bool output_particles;          ///< Enable particle output
+    std::string output_dir;     ///< Output directory path
+    std::string checkpoint_dir; ///< Checkpoint directory path
+    int field_cadence;          ///< Output fields every N steps
+    int particle_cadence;       ///< Output particles every N steps
+    int checkpoint_cadence;     ///< Checkpoint every N steps
+    bool compress_output;       ///< Enable HDF5 compression
+    bool output_particles;      ///< Enable particle output
 
     // Field selection (which fields to output)
     bool output_Ex, output_Ey, output_Bz;
@@ -115,12 +117,9 @@ public:
      * @param nx_global,ny_global Global grid dimensions
      * @param offset_x,offset_y Offset in global array
      */
-    void write_field(const std::string& filename,
-                    const std::string& dataset_name,
-                    const double* field,
-                    int nx_local, int ny_local,
-                    int nx_global, int ny_global,
-                    int offset_x, int offset_y);
+    void write_field(const std::string& filename, const std::string& dataset_name,
+                     const double* field, int nx_local, int ny_local, int nx_global, int ny_global,
+                     int offset_x, int offset_y);
 
     // ==========================================================================
     // Particle output
@@ -155,9 +154,8 @@ public:
      * - All particles (x, y, vx, vy, weight, type)
      * - Simulation metadata (step, time, parameters)
      */
-    void write_checkpoint(int step, double time,
-                         const FieldArrays& fields,
-                         const ParticleBuffer& particles);
+    void write_checkpoint(int step, double time, const FieldArrays& fields,
+                          const ParticleBuffer& particles);
 
     /**
      * @brief Read checkpoint file and restore simulation state
@@ -168,10 +166,8 @@ public:
      * @param fields Output: field arrays (allocated and filled)
      * @param particles Output: particle buffer (allocated and filled)
      */
-    void read_checkpoint(const std::string& filename,
-                        int& step, double& time,
-                        FieldArrays& fields,
-                        ParticleBuffer& particles);
+    void read_checkpoint(const std::string& filename, int& step, double& time, FieldArrays& fields,
+                         ParticleBuffer& particles);
 
     // ==========================================================================
     // Metadata and diagnostics
@@ -195,8 +191,7 @@ public:
      *
      * @note Only master rank writes diagnostics file
      */
-    void write_diagnostics(int step, double time,
-                          const std::map<std::string, double>& diagnostics);
+    void write_diagnostics(int step, double time, const std::map<std::string, double>& diagnostics);
 
     // ==========================================================================
     // Utilities
@@ -230,7 +225,7 @@ public:
      */
     std::string find_latest_checkpoint() const;
 
-private:
+  private:
     /**
      * @brief Create HDF5 file with parallel access
      *

@@ -5,18 +5,18 @@
  */
 
 #include "io_manager.h"
+
 #include "platform.h"
-#include <sstream>
-#include <iomanip>
-#include <sys/stat.h>
+
+#include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
+
 #include <algorithm>
-#include <dirent.h>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
 
 namespace jericho {
 
@@ -24,24 +24,15 @@ namespace jericho {
 // Helper macros
 // =============================================================================
 
-
 // Simplified implementation for CPU build
 // Full HDF5 implementation available in original file
 
 IOManager::IOManager(const std::string& output_dir, const MPIManager* mpi)
-    : output_dir(output_dir),
-      checkpoint_dir(output_dir + "/checkpoints"),
-      field_cadence(10),
-      particle_cadence(100),
-      checkpoint_cadence(1000),
-      compress_output(true),
-      output_particles(true),
-      output_Ex(true), output_Ey(true), output_Bz(true),
-      output_charge(true), output_current(true),
-      output_flow_velocity(true),
-      mpi(mpi),
-      diag_file(nullptr)
-{
+    : output_dir(output_dir), checkpoint_dir(output_dir + "/checkpoints"), field_cadence(10),
+      particle_cadence(100), checkpoint_cadence(1000), compress_output(true),
+      output_particles(true), output_Ex(true), output_Ey(true), output_Bz(true),
+      output_charge(true), output_current(true), output_flow_velocity(true), mpi(mpi),
+      diag_file(nullptr) {
     create_directories();
     if (mpi->is_master()) {
         std::string diag_filename = output_dir + "/diagnostics.csv";
@@ -72,17 +63,17 @@ void IOManager::create_directories() {
 
 std::string IOManager::get_filename(const std::string& prefix, int step) const {
     std::ostringstream oss;
-    oss << output_dir << "/" << prefix << "_step_"
-        << std::setw(6) << std::setfill('0') << step << ".h5";
+    oss << output_dir << "/" << prefix << "_step_" << std::setw(6) << std::setfill('0') << step
+        << ".h5";
     return oss.str();
 }
 
 std::vector<std::string> IOManager::list_checkpoints() const {
-    return std::vector<std::string>();  // Stub
+    return std::vector<std::string>(); // Stub
 }
 
 std::string IOManager::find_latest_checkpoint() const {
-    return "";  // Stub
+    return ""; // Stub
 }
 
 hid_t IOManager::create_parallel_file(const std::string& filename) {
@@ -91,12 +82,12 @@ hid_t IOManager::create_parallel_file(const std::string& filename) {
 }
 
 hid_t IOManager::open_parallel_file(const std::string& filename) {
-    return 0;  // Stub
+    return 0; // Stub
 }
 
 void IOManager::device_to_host(const double* d_field, double* h_field, int nx, int ny) {
     size_t bytes = nx * ny * sizeof(double);
-    memcpy(h_field, d_field, bytes);  // In CPU mode, no device/host distinction
+    memcpy(h_field, d_field, bytes); // In CPU mode, no device/host distinction
 }
 
 void IOManager::host_to_device(const double* h_field, double* d_field, int nx, int ny) {
@@ -108,12 +99,9 @@ void IOManager::write_metadata(hid_t file_id, int step, double time) {
     // HDF5 stub
 }
 
-void IOManager::write_field(const std::string& filename,
-                            const std::string& dataset_name,
-                            const double* field,
-                            int nx_local, int ny_local,
-                            int nx_global, int ny_global,
-                            int offset_x, int offset_y) {
+void IOManager::write_field(const std::string& filename, const std::string& dataset_name,
+                            const double* field, int nx_local, int ny_local, int nx_global,
+                            int ny_global, int offset_x, int offset_y) {
     // HDF5 stub - would write actual data here
     if (mpi->is_master()) {
         std::cout << "Would write field " << dataset_name << " to " << filename << std::endl;
@@ -132,33 +120,31 @@ void IOManager::write_particles(int step, double time, const ParticleBuffer& par
     }
 }
 
-void IOManager::write_checkpoint(int step, double time,
-                                 const FieldArrays& fields,
+void IOManager::write_checkpoint(int step, double time, const FieldArrays& fields,
                                  const ParticleBuffer& particles) {
     if (mpi->is_master()) {
         std::cout << "Checkpoint at step " << step << std::endl;
     }
 }
 
-void IOManager::read_checkpoint(const std::string& filename,
-                               int& step, double& time,
-                               FieldArrays& fields,
-                               ParticleBuffer& particles) {
+void IOManager::read_checkpoint(const std::string& filename, int& step, double& time,
+                                FieldArrays& fields, ParticleBuffer& particles) {
     throw std::runtime_error("Checkpoint reading not implemented");
 }
 
 void IOManager::write_diagnostics(int step, double time,
                                   const std::map<std::string, double>& diagnostics) {
-    if (!mpi->is_master() || !diag_file) return;
+    if (!mpi->is_master() || !diag_file)
+        return;
 
     fprintf(diag_file, "%d,%.10e", step, time);
-    
+
     auto it = diagnostics.find("total_energy");
     fprintf(diag_file, ",%.10e", (it != diagnostics.end()) ? it->second : 0.0);
-    
+
     it = diagnostics.find("num_particles");
     fprintf(diag_file, ",%.0f", (it != diagnostics.end()) ? it->second : 0.0);
-    
+
     fprintf(diag_file, "\n");
     fflush(diag_file);
 }

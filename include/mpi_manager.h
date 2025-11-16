@@ -12,7 +12,9 @@
 
 #include "field_arrays.h"
 #include "particle_buffer.h"
+
 #include <mpi.h>
+
 #include <vector>
 
 namespace jericho {
@@ -37,29 +39,29 @@ namespace jericho {
  * ```
  */
 class MPIManager {
-public:
+  public:
     // MPI topology
-    int rank;           ///< This process's rank
-    int size;           ///< Total number of MPI processes
-    int npx;            ///< Processes in x direction
-    int npy;            ///< Processes in y direction
-    int rank_x;         ///< This rank's x coordinate in process grid
-    int rank_y;         ///< This rank's y coordinate in process grid
+    int rank;   ///< This process's rank
+    int size;   ///< Total number of MPI processes
+    int npx;    ///< Processes in x direction
+    int npy;    ///< Processes in y direction
+    int rank_x; ///< This rank's x coordinate in process grid
+    int rank_y; ///< This rank's y coordinate in process grid
 
     // Neighbor ranks (for ghost cell exchange)
-    int neighbor_left;    ///< Rank of left neighbor (-1 if boundary)
-    int neighbor_right;   ///< Rank of right neighbor
-    int neighbor_bottom;  ///< Rank of bottom neighbor
-    int neighbor_top;     ///< Rank of top neighbor
+    int neighbor_left;   ///< Rank of left neighbor (-1 if boundary)
+    int neighbor_right;  ///< Rank of right neighbor
+    int neighbor_bottom; ///< Rank of bottom neighbor
+    int neighbor_top;    ///< Rank of top neighbor
 
     // Domain decomposition
-    double x_min_global, x_max_global;  ///< Global domain bounds
+    double x_min_global, x_max_global; ///< Global domain bounds
     double y_min_global, y_max_global;
-    double x_min_local, x_max_local;    ///< Local subdomain bounds
+    double x_min_local, x_max_local; ///< Local subdomain bounds
     double y_min_local, y_max_local;
 
-    int nx_global, ny_global;  ///< Global grid dimensions
-    int nx_local, ny_local;    ///< Local grid dimensions (excluding ghosts)
+    int nx_global, ny_global; ///< Global grid dimensions
+    int nx_local, ny_local;   ///< Local grid dimensions (excluding ghosts)
 
     // CUDA-aware MPI flag
     bool cuda_aware_mpi;
@@ -99,12 +101,8 @@ public:
      * @param x_min,x_max,y_min,y_max Global domain bounds
      * @param cuda_aware Whether to use CUDA-aware MPI
      */
-    MPIManager(int* argc, char*** argv,
-              int npx, int npy,
-              int nx_global, int ny_global,
-              double x_min, double x_max,
-              double y_min, double y_max,
-              bool cuda_aware = false);
+    MPIManager(int* argc, char*** argv, int npx, int npy, int nx_global, int ny_global,
+               double x_min, double x_max, double y_min, double y_max, bool cuda_aware = false);
 
     /**
      * @brief Destructor - finalize MPI
@@ -226,28 +224,38 @@ public:
     /**
      * @brief Check if this rank is on a domain boundary
      */
-    bool on_left_boundary() const { return rank_x == 0; }
-    bool on_right_boundary() const { return rank_x == npx - 1; }
-    bool on_bottom_boundary() const { return rank_y == 0; }
-    bool on_top_boundary() const { return rank_y == npy - 1; }
+    bool on_left_boundary() const {
+        return rank_x == 0;
+    }
+    bool on_right_boundary() const {
+        return rank_x == npx - 1;
+    }
+    bool on_bottom_boundary() const {
+        return rank_y == 0;
+    }
+    bool on_top_boundary() const {
+        return rank_y == npy - 1;
+    }
 
     /**
      * @brief Master rank (for I/O coordination)
      */
-    bool is_master() const { return rank == 0; }
+    bool is_master() const {
+        return rank == 0;
+    }
 
-private:
+  private:
     /**
      * @brief Pack ghost cells from device to send buffer
      */
-    void pack_ghost_cells(const double* field, int nx, int ny, int nghost,
-                         double* send_buffer, int direction);
+    void pack_ghost_cells(const double* field, int nx, int ny, int nghost, double* send_buffer,
+                          int direction);
 
     /**
      * @brief Unpack received ghost cells to device
      */
-    void unpack_ghost_cells(double* field, int nx, int ny, int nghost,
-                           const double* recv_buffer, int direction);
+    void unpack_ghost_cells(double* field, int nx, int ny, int nghost, const double* recv_buffer,
+                            int direction);
 };
 
 } // namespace jericho

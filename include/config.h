@@ -10,9 +10,9 @@
 
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace jericho {
 
@@ -20,27 +20,27 @@ namespace jericho {
  * @brief Particle species configuration
  */
 struct SpeciesConfig {
-    std::string name;           ///< Species name (e.g., "proton", "electron")
-    double charge;              ///< Charge [C]
-    double mass;                ///< Mass [kg]
-    double density;             ///< Number density [m^-3]
-    double temperature;         ///< Temperature [eV]
-    double drift_vx;            ///< Drift velocity x [m/s]
-    double drift_vy;            ///< Drift velocity y [m/s]
-    size_t particles_per_cell;  ///< Macroparticles per cell
+    std::string name;          ///< Species name (e.g., "proton", "electron")
+    double charge;             ///< Charge [C]
+    double mass;               ///< Mass [kg]
+    double density;            ///< Number density [m^-3]
+    double temperature;        ///< Temperature [eV]
+    double drift_vx;           ///< Drift velocity x [m/s]
+    double drift_vy;           ///< Drift velocity y [m/s]
+    size_t particles_per_cell; ///< Macroparticles per cell
 };
 
 /**
  * @brief Boundary condition configuration
  */
 struct BoundaryConfig {
-    std::string type;           ///< "periodic", "outflow", "inflow", "reflecting"
+    std::string type; ///< "periodic", "outflow", "inflow", "reflecting"
 
     // Inflow parameters
-    double inflow_density;      ///< Inflow density [m^-3]
-    double inflow_temperature;  ///< Inflow temperature [eV]
-    double inflow_vx;           ///< Inflow velocity x [m/s]
-    double inflow_vy;           ///< Inflow velocity y [m/s]
+    double inflow_density;     ///< Inflow density [m^-3]
+    double inflow_temperature; ///< Inflow temperature [eV]
+    double inflow_vx;          ///< Inflow velocity x [m/s]
+    double inflow_vy;          ///< Inflow velocity y [m/s]
 };
 
 /**
@@ -91,39 +91,39 @@ struct BoundaryConfig {
  * ```
  */
 class Config {
-public:
+  public:
     // =========================================================================
     // Simulation parameters
     // =========================================================================
 
-    double dt;                  ///< Timestep [s]
-    int n_steps;                ///< Number of timesteps
-    bool use_cam;               ///< Use Current Advance Method
-    double cam_alpha;           ///< CAM mixing parameter (0-1)
+    double dt;        ///< Timestep [s]
+    int n_steps;      ///< Number of timesteps
+    bool use_cam;     ///< Use Current Advance Method
+    double cam_alpha; ///< CAM mixing parameter (0-1)
 
     // =========================================================================
     // Grid parameters
     // =========================================================================
 
-    int nx_global;              ///< Global grid points in x
-    int ny_global;              ///< Global grid points in y
-    double x_min, x_max;        ///< Physical domain bounds x [m]
-    double y_min, y_max;        ///< Physical domain bounds y [m]
-    int nghost;                 ///< Number of ghost cell layers
+    int nx_global;       ///< Global grid points in x
+    int ny_global;       ///< Global grid points in y
+    double x_min, x_max; ///< Physical domain bounds x [m]
+    double y_min, y_max; ///< Physical domain bounds y [m]
+    int nghost;          ///< Number of ghost cell layers
 
     // =========================================================================
     // MPI parameters
     // =========================================================================
 
-    int npx;                    ///< MPI processes in x
-    int npy;                    ///< MPI processes in y
-    bool cuda_aware_mpi;        ///< Use CUDA-aware MPI
+    int npx;             ///< MPI processes in x
+    int npy;             ///< MPI processes in y
+    bool cuda_aware_mpi; ///< Use CUDA-aware MPI
 
     // =========================================================================
     // Particle species
     // =========================================================================
 
-    std::vector<SpeciesConfig> species;  ///< List of particle species
+    std::vector<SpeciesConfig> species; ///< List of particle species
 
     // =========================================================================
     // Boundary conditions
@@ -138,10 +138,10 @@ public:
     // Initial fields
     // =========================================================================
 
-    std::string magnetic_field_type;  ///< "uniform", "harris_sheet"
-    double B0;                        ///< Magnetic field strength [T]
-    double L;                         ///< Harris sheet thickness [grid units]
-    double Ex0, Ey0, Bz0;             ///< Background fields
+    std::string magnetic_field_type; ///< "uniform", "harris_sheet"
+    double B0;                       ///< Magnetic field strength [T]
+    double L;                        ///< Harris sheet thickness [grid units]
+    double Ex0, Ey0, Bz0;            ///< Background fields
 
     // =========================================================================
     // Output parameters
@@ -188,13 +188,19 @@ public:
     /**
      * @brief Get grid spacing
      */
-    double get_dx() const { return (x_max - x_min) / nx_global; }
-    double get_dy() const { return (y_max - y_min) / ny_global; }
+    double get_dx() const {
+        return (x_max - x_min) / nx_global;
+    }
+    double get_dy() const {
+        return (y_max - y_min) / ny_global;
+    }
 
     /**
      * @brief Get total number of MPI processes
      */
-    int get_mpi_size() const { return npx * npy; }
+    int get_mpi_size() const {
+        return npx * npy;
+    }
 };
 
 } // namespace jericho

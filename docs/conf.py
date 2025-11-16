@@ -17,7 +17,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.mathjax',
-    'breathe',  # For C++/CUDA documentation
+    # 'breathe',  # For C++/CUDA documentation (requires doxygen XML)
     'sphinx_rtd_theme',
 ]
 
@@ -39,8 +39,9 @@ html_theme_options = {
 }
 
 # -- Breathe configuration ---------------------------------------------------
-breathe_projects = {"jericho_mkII": "../build/xml"}
-breathe_default_project = "jericho_mkII"
+# Uncomment when Doxygen XML is available
+# breathe_projects = {"jericho_mkII": "../build/xml"}
+# breathe_default_project = "jericho_mkII"
 
 # -- Math configuration ------------------------------------------------------
 mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'

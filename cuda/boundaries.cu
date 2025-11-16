@@ -15,10 +15,10 @@
 
 #include "../include/particle_buffer.h"
 #include "../include/platform.h"
-#include <ctime>
-#include <cstdlib>
-#include <cmath>
 
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 namespace jericho {
 namespace cuda {
@@ -28,20 +28,20 @@ namespace cuda {
 // =============================================================================
 
 enum class BoundaryType : uint8_t {
-    PERIODIC = 0,   ///< Wrap around to opposite boundary
-    OUTFLOW = 1,    ///< Remove particles leaving domain
-    INFLOW = 2,     ///< Inject particles (handled separately)
-    REFLECTING = 3  ///< Reflect particles elastically
+    PERIODIC = 0,  ///< Wrap around to opposite boundary
+    OUTFLOW = 1,   ///< Remove particles leaving domain
+    INFLOW = 2,    ///< Inject particles (handled separately)
+    REFLECTING = 3 ///< Reflect particles elastically
 };
 
 /**
  * @brief Boundary configuration for each domain edge
  */
 struct BoundaryConfig {
-    BoundaryType x_min;  ///< Left boundary
-    BoundaryType x_max;  ///< Right boundary
-    BoundaryType y_min;  ///< Bottom boundary
-    BoundaryType y_max;  ///< Top boundary
+    BoundaryType x_min; ///< Left boundary
+    BoundaryType x_max; ///< Right boundary
+    BoundaryType y_min; ///< Bottom boundary
+    BoundaryType y_max; ///< Top boundary
 };
 
 // =============================================================================
@@ -64,22 +64,14 @@ struct BoundaryConfig {
  * @param n_removed Output: counter for removed particles (device)
  * @param n_particles Number of active particles
  */
-GLOBAL void apply_boundaries_kernel(
-    double*  x,
-    double*  y,
-    double*  vx,
-    double*  vy,
-    bool*  active,
-    double x_min, double x_max,
-    double y_min, double y_max,
-    BoundaryConfig bc,
-    bool* removal_flags,
-    size_t* n_removed,
-    size_t n_particles)
-{
+GLOBAL void apply_boundaries_kernel(double* x, double* y, double* vx, double* vy, bool* active,
+                                    double x_min, double x_max, double y_min, double y_max,
+                                    BoundaryConfig bc, bool* removal_flags, size_t* n_removed,
+                                    size_t n_particles) {
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i >= n_particles || !active[i]) return;
+    if (i >= n_particles || !active[i])
+        return;
 
     double px = x[i];
     double py = y[i];
@@ -94,58 +86,58 @@ GLOBAL void apply_boundaries_kernel(
     // Check X boundaries
     if (px < x_min) {
         switch (bc.x_min) {
-            case BoundaryType::PERIODIC:
-                px += Lx;
-                break;
-            case BoundaryType::OUTFLOW:
-                remove = true;
-                break;
-            case BoundaryType::REFLECTING:
-                px = 2.0 * x_min - px;  // Reflect position
-                pvx = -pvx;              // Reverse velocity
-                break;
+        case BoundaryType::PERIODIC:
+            px += Lx;
+            break;
+        case BoundaryType::OUTFLOW:
+            remove = true;
+            break;
+        case BoundaryType::REFLECTING:
+            px = 2.0 * x_min - px; // Reflect position
+            pvx = -pvx;            // Reverse velocity
+            break;
         }
     } else if (px > x_max) {
         switch (bc.x_max) {
-            case BoundaryType::PERIODIC:
-                px -= Lx;
-                break;
-            case BoundaryType::OUTFLOW:
-                remove = true;
-                break;
-            case BoundaryType::REFLECTING:
-                px = 2.0 * x_max - px;
-                pvx = -pvx;
-                break;
+        case BoundaryType::PERIODIC:
+            px -= Lx;
+            break;
+        case BoundaryType::OUTFLOW:
+            remove = true;
+            break;
+        case BoundaryType::REFLECTING:
+            px = 2.0 * x_max - px;
+            pvx = -pvx;
+            break;
         }
     }
 
     // Check Y boundaries
     if (py < y_min) {
         switch (bc.y_min) {
-            case BoundaryType::PERIODIC:
-                py += Ly;
-                break;
-            case BoundaryType::OUTFLOW:
-                remove = true;
-                break;
-            case BoundaryType::REFLECTING:
-                py = 2.0 * y_min - py;
-                pvy = -pvy;
-                break;
+        case BoundaryType::PERIODIC:
+            py += Ly;
+            break;
+        case BoundaryType::OUTFLOW:
+            remove = true;
+            break;
+        case BoundaryType::REFLECTING:
+            py = 2.0 * y_min - py;
+            pvy = -pvy;
+            break;
         }
     } else if (py > y_max) {
         switch (bc.y_max) {
-            case BoundaryType::PERIODIC:
-                py -= Ly;
-                break;
-            case BoundaryType::OUTFLOW:
-                remove = true;
-                break;
-            case BoundaryType::REFLECTING:
-                py = 2.0 * y_max - py;
-                pvy = -pvy;
-                break;
+        case BoundaryType::PERIODIC:
+            py -= Ly;
+            break;
+        case BoundaryType::OUTFLOW:
+            remove = true;
+            break;
+        case BoundaryType::REFLECTING:
+            py = 2.0 * y_max - py;
+            pvy = -pvy;
+            break;
         }
     }
 
@@ -182,28 +174,16 @@ GLOBAL void apply_boundaries_kernel(
  * @param type Species type
  * @param seed Random seed
  */
-GLOBAL void inject_particles_kernel(
-    double* x,
-    double* y,
-    double* vx,
-    double* vy,
-    double* weight,
-    uint8_t* type,
-    bool* active,
-    size_t* insert_index,
-    int boundary,
-    size_t n_inject,
-    double x_min, double x_max,
-    double y_min, double y_max,
-    double vx_mean, double vy_mean,
-    double v_thermal,
-    double particle_weight,
-    uint8_t particle_type,
-    unsigned int seed)
-{
+GLOBAL void inject_particles_kernel(double* x, double* y, double* vx, double* vy, double* weight,
+                                    uint8_t* type, bool* active, size_t* insert_index, int boundary,
+                                    size_t n_inject, double x_min, double x_max, double y_min,
+                                    double y_max, double vx_mean, double vy_mean, double v_thermal,
+                                    double particle_weight, uint8_t particle_type,
+                                    unsigned int seed) {
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i >= n_inject) return;
+    if (i >= n_inject)
+        return;
 
     // Get insertion index atomically
     size_t idx = atomicAdd(insert_index, 1);
@@ -229,22 +209,22 @@ GLOBAL void inject_particles_kernel(
     double Ly = y_max - y_min;
 
     switch (boundary) {
-        case 0:  // X minimum (left edge)
-            px = x_min;
-            py = y_min + rand_uniform() * Ly;
-            break;
-        case 1:  // X maximum (right edge)
-            px = x_max;
-            py = y_min + rand_uniform() * Ly;
-            break;
-        case 2:  // Y minimum (bottom edge)
-            px = x_min + rand_uniform() * Lx;
-            py = y_min;
-            break;
-        case 3:  // Y maximum (top edge)
-            px = x_min + rand_uniform() * Lx;
-            py = y_max;
-            break;
+    case 0: // X minimum (left edge)
+        px = x_min;
+        py = y_min + rand_uniform() * Ly;
+        break;
+    case 1: // X maximum (right edge)
+        px = x_max;
+        py = y_min + rand_uniform() * Ly;
+        break;
+    case 2: // Y minimum (bottom edge)
+        px = x_min + rand_uniform() * Lx;
+        py = y_min;
+        break;
+    case 3: // Y maximum (top edge)
+        px = x_min + rand_uniform() * Lx;
+        py = y_max;
+        break;
     }
 
     // Maxwellian velocity distribution
@@ -273,11 +253,8 @@ GLOBAL void inject_particles_kernel(
  * @param bc Boundary configuration
  * @return Number of particles removed
  */
-size_t apply_boundaries(ParticleBuffer& buffer,
-                       double x_min, double x_max,
-                       double y_min, double y_max,
-                       const BoundaryConfig& bc)
-{
+size_t apply_boundaries(ParticleBuffer& buffer, double x_min, double x_max, double y_min,
+                        double y_max, const BoundaryConfig& bc) {
     // Allocate temporary arrays on device
     bool* removal_flags;
     size_t* d_n_removed;
@@ -294,16 +271,13 @@ size_t apply_boundaries(ParticleBuffer& buffer,
 #ifdef USE_CPU
     dim3 grid(num_blocks, 1, 1);
     dim3 block(threads_per_block, 1, 1);
-    KERNEL_LAUNCH(apply_boundaries_kernel, grid, block,
-        buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.active,
-        x_min, x_max, y_min, y_max,
-        bc, removal_flags, d_n_removed, buffer.count);
+    KERNEL_LAUNCH(apply_boundaries_kernel, grid, block, buffer.x, buffer.y, buffer.vx, buffer.vy,
+                  buffer.active, x_min, x_max, y_min, y_max, bc, removal_flags, d_n_removed,
+                  buffer.count);
 #else
     apply_boundaries_kernel<<<num_blocks, threads_per_block>>>(
-        buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.active,
-        x_min, x_max, y_min, y_max,
-        bc, removal_flags, d_n_removed, buffer.count
-    );
+        buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.active, x_min, x_max, y_min, y_max, bc,
+        removal_flags, d_n_removed, buffer.count);
     PLATFORM_CHECK(cudaGetLastError());
 #endif
 
@@ -333,15 +307,9 @@ size_t apply_boundaries(ParticleBuffer& buffer,
  * @param weight Particle weight
  * @param type Species type
  */
-void inject_particles(ParticleBuffer& buffer,
-                     int boundary,
-                     size_t n_inject,
-                     const double* domain_bounds,
-                     double vx_mean, double vy_mean,
-                     double v_thermal,
-                     double weight,
-                     uint8_t type)
-{
+void inject_particles(ParticleBuffer& buffer, int boundary, size_t n_inject,
+                      const double* domain_bounds, double vx_mean, double vy_mean, double v_thermal,
+                      double weight, uint8_t type) {
     // Ensure buffer has space
     if (buffer.count + n_inject > buffer.capacity) {
         buffer.resize(buffer.capacity * 2);
@@ -359,22 +327,16 @@ void inject_particles(ParticleBuffer& buffer,
 #ifdef USE_CPU
     dim3 grid(num_blocks, 1, 1);
     dim3 block(threads_per_block, 1, 1);
-    KERNEL_LAUNCH(inject_particles_kernel, grid, block,
-        buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.weight, buffer.type, buffer.active,
-        d_insert_index,
-        boundary, n_inject,
-        domain_bounds[0], domain_bounds[1], domain_bounds[2], domain_bounds[3],
-        vx_mean, vy_mean, v_thermal, weight, type,
-        static_cast<unsigned int>(time(nullptr)));
+    KERNEL_LAUNCH(inject_particles_kernel, grid, block, buffer.x, buffer.y, buffer.vx, buffer.vy,
+                  buffer.weight, buffer.type, buffer.active, d_insert_index, boundary, n_inject,
+                  domain_bounds[0], domain_bounds[1], domain_bounds[2], domain_bounds[3], vx_mean,
+                  vy_mean, v_thermal, weight, type, static_cast<unsigned int>(time(nullptr)));
 #else
     inject_particles_kernel<<<num_blocks, threads_per_block>>>(
         buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.weight, buffer.type, buffer.active,
-        d_insert_index,
-        boundary, n_inject,
-        domain_bounds[0], domain_bounds[1], domain_bounds[2], domain_bounds[3],
-        vx_mean, vy_mean, v_thermal, weight, type,
-        static_cast<unsigned int>(time(nullptr))
-    );
+        d_insert_index, boundary, n_inject, domain_bounds[0], domain_bounds[1], domain_bounds[2],
+        domain_bounds[3], vx_mean, vy_mean, v_thermal, weight, type,
+        static_cast<unsigned int>(time(nullptr)));
     PLATFORM_CHECK(cudaGetLastError());
 #endif
 

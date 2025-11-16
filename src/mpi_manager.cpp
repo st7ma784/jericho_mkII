@@ -5,18 +5,19 @@
  */
 
 #include "mpi_manager.h"
+
 #include "platform.h"
-#include <stdexcept>
-#include <iostream>
+
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <stdexcept>
 
 namespace jericho {
 
 // =============================================================================
 // Helper macros
 // =============================================================================
-
 
 // Placeholder for full implementation - see original mpi_manager.cpp
 // The sed command accidentally deleted most of the file
@@ -26,7 +27,7 @@ void MPIManager::CommBuffers::allocate(int nx, int ny, int nghost, bool use_devi
     // Simplified CPU implementation
     size_t x_buffer_size = ny * nghost;
     size_t y_buffer_size = nx * nghost;
-    
+
     h_send_left.resize(x_buffer_size);
     h_send_right.resize(x_buffer_size);
     h_send_bottom.resize(y_buffer_size);
@@ -48,18 +49,10 @@ void MPIManager::CommBuffers::deallocate() {
     h_recv_top.clear();
 }
 
-MPIManager::MPIManager(int* argc, char*** argv,
-                      int npx, int npy,
-                      int nx_global, int ny_global,
-                      double x_min, double x_max,
-                      double y_min, double y_max,
-                      bool cuda_aware)
-    : npx(npx), npy(npy),
-      nx_global(nx_global), ny_global(ny_global),
-      x_min_global(x_min), x_max_global(x_max),
-      y_min_global(y_min), y_max_global(y_max),
-      cuda_aware_mpi(cuda_aware)
-{
+MPIManager::MPIManager(int* argc, char*** argv, int npx, int npy, int nx_global, int ny_global,
+                       double x_min, double x_max, double y_min, double y_max, bool cuda_aware)
+    : npx(npx), npy(npy), nx_global(nx_global), ny_global(ny_global), x_min_global(x_min),
+      x_max_global(x_max), y_min_global(y_min), y_max_global(y_max), cuda_aware_mpi(cuda_aware) {
     MPI_Init(argc, argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -90,8 +83,10 @@ void MPIManager::compute_local_domain() {
     nx_local = nx_global / npx;
     ny_local = ny_global / npy;
 
-    if (rank_x == npx - 1) nx_local += nx_global % npx;
-    if (rank_y == npy - 1) ny_local += ny_global % npy;
+    if (rank_x == npx - 1)
+        nx_local += nx_global % npx;
+    if (rank_y == npy - 1)
+        ny_local += ny_global % npy;
 
     double dx_global = (x_max_global - x_min_global) / nx_global;
     double dy_global = (y_max_global - y_min_global) / ny_global;

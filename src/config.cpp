@@ -5,12 +5,13 @@
  */
 
 #include "config.h"
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <stdexcept>
+
 #include <algorithm>
 #include <cctype>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
 
 namespace jericho {
 
@@ -21,13 +22,13 @@ namespace jericho {
 static std::string trim(const std::string& str) {
     size_t start = str.find_first_not_of(" \t\r\n");
     size_t end = str.find_last_not_of(" \t\r\n");
-    if (start == std::string::npos) return "";
+    if (start == std::string::npos)
+        return "";
     return str.substr(start, end - start + 1);
 }
 
 static bool starts_with(const std::string& str, const std::string& prefix) {
-    return str.size() >= prefix.size() &&
-           str.compare(0, prefix.size(), prefix) == 0;
+    return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
 }
 
 static std::string strip_quotes(const std::string& str) {
@@ -43,7 +44,7 @@ static std::string strip_quotes(const std::string& str) {
 // =============================================================================
 
 class SimpleTomlParser {
-public:
+  public:
     std::map<std::string, std::string> data;
     std::vector<std::map<std::string, std::string>> species_list;
 
@@ -62,7 +63,8 @@ public:
             line = trim(line);
 
             // Skip empty lines and comments
-            if (line.empty() || line[0] == '#') continue;
+            if (line.empty() || line[0] == '#')
+                continue;
 
             // Section headers
             if (line[0] == '[') {
@@ -92,7 +94,8 @@ public:
 
             // Key-value pairs
             size_t eq_pos = line.find('=');
-            if (eq_pos == std::string::npos) continue;
+            if (eq_pos == std::string::npos)
+                continue;
 
             std::string key = trim(line.substr(0, eq_pos));
             std::string value = trim(line.substr(eq_pos + 1));
@@ -107,8 +110,7 @@ public:
             if (in_species) {
                 current_species[key] = value;
             } else {
-                std::string full_key = current_section.empty() ? key :
-                                      current_section + "." + key;
+                std::string full_key = current_section.empty() ? key : current_section + "." + key;
                 data[full_key] = value;
             }
         }
@@ -136,7 +138,8 @@ public:
 
     bool get_bool(const std::string& key, bool default_val = false) {
         auto it = data.find(key);
-        if (it == data.end()) return default_val;
+        if (it == data.end())
+            return default_val;
         std::string val = trim(it->second);
         std::transform(val.begin(), val.end(), val.begin(), ::tolower);
         return (val == "true" || val == "1");
@@ -291,8 +294,7 @@ void Config::load(const std::string& filename) {
     // Parse [fields] section
     // =========================================================================
 
-    magnetic_field_type = parser.get_string("fields.magnetic_field_type",
-                                           magnetic_field_type);
+    magnetic_field_type = parser.get_string("fields.magnetic_field_type", magnetic_field_type);
     B0 = parser.get_double("fields.B0", B0);
     L = parser.get_double("fields.L", L);
     Ex0 = parser.get_double("fields.Ex0", Ex0);
@@ -314,8 +316,7 @@ void Config::load(const std::string& filename) {
     output_Bz = parser.get_bool("output.output_Bz", output_Bz);
     output_charge = parser.get_bool("output.output_charge", output_charge);
     output_current = parser.get_bool("output.output_current", output_current);
-    output_flow_velocity = parser.get_bool("output.output_flow_velocity",
-                                          output_flow_velocity);
+    output_flow_velocity = parser.get_bool("output.output_flow_velocity", output_flow_velocity);
 
     // Validate configuration
     validate();
@@ -373,14 +374,14 @@ void Config::print() const {
 
     std::cout << "\n[Grid]" << std::endl;
     std::cout << "  nx x ny = " << nx_global << " x " << ny_global << std::endl;
-    std::cout << "  domain = [" << x_min << ", " << x_max << "] x ["
-             << y_min << ", " << y_max << "]" << std::endl;
+    std::cout << "  domain = [" << x_min << ", " << x_max << "] x [" << y_min << ", " << y_max
+              << "]" << std::endl;
     std::cout << "  dx = " << get_dx() << " m" << std::endl;
     std::cout << "  dy = " << get_dy() << " m" << std::endl;
 
     std::cout << "\n[MPI]" << std::endl;
-    std::cout << "  npx x npy = " << npx << " x " << npy
-             << " (total: " << get_mpi_size() << ")" << std::endl;
+    std::cout << "  npx x npy = " << npx << " x " << npy << " (total: " << get_mpi_size() << ")"
+              << std::endl;
     std::cout << "  CUDA-aware = " << (cuda_aware_mpi ? "yes" : "no") << std::endl;
 
     std::cout << "\n[Species] (" << species.size() << " total)" << std::endl;

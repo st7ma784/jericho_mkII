@@ -43,7 +43,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format
+
     - name: Run clang-format check
       run: |
-        find src include cuda -name '*.cpp' -o -name '*.h' -o -name '*.cu' | \
+        find src include cuda -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.cu' \) | \
         xargs clang-format --dry-run --Werror

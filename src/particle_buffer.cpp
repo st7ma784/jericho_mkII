@@ -5,12 +5,14 @@
  */
 
 #include "particle_buffer.h"
+
 #include "platform.h"
-#include <stdexcept>
-#include <iostream>
-#include <cstring>
+
 #include <cmath>
+#include <cstring>
+#include <iostream>
 #include <random>
+#include <stdexcept>
 
 namespace jericho {
 
@@ -19,11 +21,8 @@ namespace jericho {
 // =============================================================================
 
 ParticleBuffer::ParticleBuffer(size_t initial_capacity, int device_id)
-    : capacity(0), count(0), device_id(device_id),
-      x(nullptr), y(nullptr), vx(nullptr), vy(nullptr),
-      weight(nullptr), type(nullptr), active(nullptr),
-      free_slots(nullptr), free_count(0)
-{
+    : capacity(0), count(0), device_id(device_id), x(nullptr), y(nullptr), vx(nullptr), vy(nullptr),
+      weight(nullptr), type(nullptr), active(nullptr), free_slots(nullptr), free_count(0) {
     stats = {0, 0, 0, 0};
     allocate(initial_capacity);
 }
@@ -34,16 +33,23 @@ ParticleBuffer::~ParticleBuffer() {
 
 ParticleBuffer::ParticleBuffer(ParticleBuffer&& other) noexcept
     : capacity(other.capacity), count(other.count), device_id(other.device_id),
-      free_count(other.free_count), stats(other.stats)
-{
-    x = other.x; other.x = nullptr;
-    y = other.y; other.y = nullptr;
-    vx = other.vx; other.vx = nullptr;
-    vy = other.vy; other.vy = nullptr;
-    weight = other.weight; other.weight = nullptr;
-    type = other.type; other.type = nullptr;
-    active = other.active; other.active = nullptr;
-    free_slots = other.free_slots; other.free_slots = nullptr;
+      free_count(other.free_count), stats(other.stats) {
+    x = other.x;
+    other.x = nullptr;
+    y = other.y;
+    other.y = nullptr;
+    vx = other.vx;
+    other.vx = nullptr;
+    vy = other.vy;
+    other.vy = nullptr;
+    weight = other.weight;
+    other.weight = nullptr;
+    type = other.type;
+    other.type = nullptr;
+    active = other.active;
+    other.active = nullptr;
+    free_slots = other.free_slots;
+    other.free_slots = nullptr;
 }
 
 ParticleBuffer& ParticleBuffer::operator=(ParticleBuffer&& other) noexcept {
@@ -56,14 +62,22 @@ ParticleBuffer& ParticleBuffer::operator=(ParticleBuffer&& other) noexcept {
         free_count = other.free_count;
         stats = other.stats;
 
-        x = other.x; other.x = nullptr;
-        y = other.y; other.y = nullptr;
-        vx = other.vx; other.vx = nullptr;
-        vy = other.vy; other.vy = nullptr;
-        weight = other.weight; other.weight = nullptr;
-        type = other.type; other.type = nullptr;
-        active = other.active; other.active = nullptr;
-        free_slots = other.free_slots; other.free_slots = nullptr;
+        x = other.x;
+        other.x = nullptr;
+        y = other.y;
+        other.y = nullptr;
+        vx = other.vx;
+        other.vx = nullptr;
+        vy = other.vy;
+        other.vy = nullptr;
+        weight = other.weight;
+        other.weight = nullptr;
+        type = other.type;
+        other.type = nullptr;
+        active = other.active;
+        other.active = nullptr;
+        free_slots = other.free_slots;
+        other.free_slots = nullptr;
     }
     return *this;
 }
@@ -100,14 +114,22 @@ void ParticleBuffer::allocate(size_t new_capacity) {
 }
 
 void ParticleBuffer::destroy() {
-    if (x) free(x);
-    if (y) free(y);
-    if (vx) free(vx);
-    if (vy) free(vy);
-    if (weight) free(weight);
-    if (type) free(type);
-    if (active) free(active);
-    if (free_slots) free(free_slots);
+    if (x)
+        free(x);
+    if (y)
+        free(y);
+    if (vx)
+        free(vx);
+    if (vy)
+        free(vy);
+    if (weight)
+        free(weight);
+    if (type)
+        free(type);
+    if (active)
+        free(active);
+    if (free_slots)
+        free(free_slots);
 
     x = y = vx = vy = weight = nullptr;
     type = nullptr;
@@ -164,8 +186,8 @@ void ParticleBuffer::compact() {
 // Particle insertion / removal
 // =============================================================================
 
-size_t ParticleBuffer::add_particle(double px, double py, double pvx, double pvy,
-                                   double pweight, uint8_t ptype) {
+size_t ParticleBuffer::add_particle(double px, double py, double pvx, double pvy, double pweight,
+                                    uint8_t ptype) {
     size_t idx;
 
     // Use free slot if available, otherwise append
@@ -196,7 +218,8 @@ size_t ParticleBuffer::add_particle(double px, double py, double pvx, double pvy
 }
 
 void ParticleBuffer::remove_particle(size_t idx) {
-    if (idx >= capacity || !active[idx]) return;
+    if (idx >= capacity || !active[idx])
+        return;
 
     active[idx] = false;
     free_slots[free_count++] = idx;
@@ -205,8 +228,8 @@ void ParticleBuffer::remove_particle(size_t idx) {
 }
 
 void ParticleBuffer::add_particles_batch(const double* positions, const double* velocities,
-                                        const double* weights, const uint8_t* types,
-                                        size_t n_particles) {
+                                         const double* weights, const uint8_t* types,
+                                         size_t n_particles) {
     // Ensure capacity
     if (count + n_particles > capacity) {
         resize(count + n_particles);
@@ -214,9 +237,8 @@ void ParticleBuffer::add_particles_batch(const double* positions, const double* 
 
     // Copy data
     for (size_t i = 0; i < n_particles; i++) {
-        add_particle(positions[2*i], positions[2*i+1],
-                    velocities[2*i], velocities[2*i+1],
-                    weights[i], types[i]);
+        add_particle(positions[2 * i], positions[2 * i + 1], velocities[2 * i],
+                     velocities[2 * i + 1], weights[i], types[i]);
     }
 }
 
@@ -224,10 +246,9 @@ void ParticleBuffer::add_particles_batch(const double* positions, const double* 
 // Data transfer
 // =============================================================================
 
-void ParticleBuffer::copy_to_device(const double* h_x, const double* h_y,
-                                   const double* h_vx, const double* h_vy,
-                                   const double* h_weight, const uint8_t* h_type,
-                                   size_t n, size_t offset) {
+void ParticleBuffer::copy_to_device(const double* h_x, const double* h_y, const double* h_vx,
+                                    const double* h_vy, const double* h_weight,
+                                    const uint8_t* h_type, size_t n, size_t offset) {
     // In CPU mode, just copy
     memcpy(x + offset, h_x, n * sizeof(double));
     memcpy(y + offset, h_y, n * sizeof(double));
@@ -243,8 +264,8 @@ void ParticleBuffer::copy_to_device(const double* h_x, const double* h_y,
 }
 
 void ParticleBuffer::copy_to_host(double* h_x, double* h_y, double* h_vx, double* h_vy,
-                                 double* h_weight, uint8_t* h_type,
-                                 size_t n, size_t offset) const {
+                                  double* h_weight, uint8_t* h_type, size_t n,
+                                  size_t offset) const {
     // In CPU mode, just copy
     memcpy(h_x, x + offset, n * sizeof(double));
     memcpy(h_y, y + offset, n * sizeof(double));
@@ -268,12 +289,10 @@ void ParticleBuffer::print_stats() const {
 // Helper functions
 // =============================================================================
 
-void initialize_uniform(ParticleBuffer& buffer,
-                       double x_min, double x_max, double y_min, double y_max,
-                       int particles_per_cell, int nx, int ny,
-                       uint8_t ptype, double pweight,
-                       double vx_mean, double vy_mean, double v_thermal,
-                       unsigned int seed) {
+void initialize_uniform(ParticleBuffer& buffer, double x_min, double x_max, double y_min,
+                        double y_max, int particles_per_cell, int nx, int ny, uint8_t ptype,
+                        double pweight, double vx_mean, double vy_mean, double v_thermal,
+                        unsigned int seed) {
     std::mt19937 rng(seed);
     std::uniform_real_distribution<double> uniform(0.0, 1.0);
     std::normal_distribution<double> normal(0.0, 1.0);
@@ -300,10 +319,8 @@ void initialize_uniform(ParticleBuffer& buffer,
     }
 }
 
-void initialize_maxwellian_velocities(ParticleBuffer& buffer,
-                                     double v_thermal,
-                                     double vx_drift, double vy_drift,
-                                     unsigned int seed) {
+void initialize_maxwellian_velocities(ParticleBuffer& buffer, double v_thermal, double vx_drift,
+                                      double vy_drift, unsigned int seed) {
     std::mt19937 rng(seed);
     std::normal_distribution<double> normal(0.0, 1.0);
 

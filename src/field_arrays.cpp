@@ -5,11 +5,13 @@
  */
 
 #include "field_arrays.h"
+
 #include "platform.h"
+
 #include <cmath>
-#include <stdexcept>
-#include <iostream>
 #include <cstring>
+#include <iostream>
+#include <stdexcept>
 
 namespace jericho {
 
@@ -17,15 +19,11 @@ namespace jericho {
 // Helper macros for CUDA error checking
 // =============================================================================
 
-
 // Simplified implementations for CPU build
-FieldArrays::FieldArrays(int nx_local, int ny_local, int nghost,
-                        double dx, double dy, double x_min, double y_min,
-                        int device_id)
-    : nx_local(nx_local), ny_local(ny_local), nghost(nghost),
-      dx(dx), dy(dy), x_min(x_min), y_min(y_min),
-      device_id(device_id)
-{
+FieldArrays::FieldArrays(int nx_local, int ny_local, int nghost, double dx, double dy, double x_min,
+                         double y_min, int device_id)
+    : nx_local(nx_local), ny_local(ny_local), nghost(nghost), dx(dx), dy(dy), x_min(x_min),
+      y_min(y_min), device_id(device_id) {
     nx = nx_local + 2 * nghost;
     ny = ny_local + 2 * nghost;
 
@@ -44,59 +42,93 @@ FieldArrays::~FieldArrays() {
 }
 
 FieldArrays::FieldArrays(FieldArrays&& other) noexcept
-    : nx(other.nx), ny(other.ny),
-      nx_local(other.nx_local), ny_local(other.ny_local),
-      nghost(other.nghost),
-      dx(other.dx), dy(other.dy),
-      x_min(other.x_min), y_min(other.y_min),
-      device_id(other.device_id)
-{
-    Ex = other.Ex; other.Ex = nullptr;
-    Ey = other.Ey; other.Ey = nullptr;
-    Bz = other.Bz; other.Bz = nullptr;
-    charge_density = other.charge_density; other.charge_density = nullptr;
-    Jx = other.Jx; other.Jx = nullptr;
-    Jy = other.Jy; other.Jy = nullptr;
-    Ux = other.Ux; other.Ux = nullptr;
-    Uy = other.Uy; other.Uy = nullptr;
-    Lambda = other.Lambda; other.Lambda = nullptr;
-    Gamma_x = other.Gamma_x; other.Gamma_x = nullptr;
-    Gamma_y = other.Gamma_y; other.Gamma_y = nullptr;
-    Ex_back = other.Ex_back; other.Ex_back = nullptr;
-    Ey_back = other.Ey_back; other.Ey_back = nullptr;
-    Bz_back = other.Bz_back; other.Bz_back = nullptr;
-    tmp1 = other.tmp1; other.tmp1 = nullptr;
-    tmp2 = other.tmp2; other.tmp2 = nullptr;
-    tmp3 = other.tmp3; other.tmp3 = nullptr;
+    : nx(other.nx), ny(other.ny), nx_local(other.nx_local), ny_local(other.ny_local),
+      nghost(other.nghost), dx(other.dx), dy(other.dy), x_min(other.x_min), y_min(other.y_min),
+      device_id(other.device_id) {
+    Ex = other.Ex;
+    other.Ex = nullptr;
+    Ey = other.Ey;
+    other.Ey = nullptr;
+    Bz = other.Bz;
+    other.Bz = nullptr;
+    charge_density = other.charge_density;
+    other.charge_density = nullptr;
+    Jx = other.Jx;
+    other.Jx = nullptr;
+    Jy = other.Jy;
+    other.Jy = nullptr;
+    Ux = other.Ux;
+    other.Ux = nullptr;
+    Uy = other.Uy;
+    other.Uy = nullptr;
+    Lambda = other.Lambda;
+    other.Lambda = nullptr;
+    Gamma_x = other.Gamma_x;
+    other.Gamma_x = nullptr;
+    Gamma_y = other.Gamma_y;
+    other.Gamma_y = nullptr;
+    Ex_back = other.Ex_back;
+    other.Ex_back = nullptr;
+    Ey_back = other.Ey_back;
+    other.Ey_back = nullptr;
+    Bz_back = other.Bz_back;
+    other.Bz_back = nullptr;
+    tmp1 = other.tmp1;
+    other.tmp1 = nullptr;
+    tmp2 = other.tmp2;
+    other.tmp2 = nullptr;
+    tmp3 = other.tmp3;
+    other.tmp3 = nullptr;
 }
 
 FieldArrays& FieldArrays::operator=(FieldArrays&& other) noexcept {
     if (this != &other) {
         destroy();
-        nx = other.nx; ny = other.ny;
-        nx_local = other.nx_local; ny_local = other.ny_local;
+        nx = other.nx;
+        ny = other.ny;
+        nx_local = other.nx_local;
+        ny_local = other.ny_local;
         nghost = other.nghost;
-        dx = other.dx; dy = other.dy;
-        x_min = other.x_min; y_min = other.y_min;
+        dx = other.dx;
+        dy = other.dy;
+        x_min = other.x_min;
+        y_min = other.y_min;
         device_id = other.device_id;
 
-        Ex = other.Ex; other.Ex = nullptr;
-        Ey = other.Ey; other.Ey = nullptr;
-        Bz = other.Bz; other.Bz = nullptr;
-        charge_density = other.charge_density; other.charge_density = nullptr;
-        Jx = other.Jx; other.Jx = nullptr;
-        Jy = other.Jy; other.Jy = nullptr;
-        Ux = other.Ux; other.Ux = nullptr;
-        Uy = other.Uy; other.Uy = nullptr;
-        Lambda = other.Lambda; other.Lambda = nullptr;
-        Gamma_x = other.Gamma_x; other.Gamma_x = nullptr;
-        Gamma_y = other.Gamma_y; other.Gamma_y = nullptr;
-        Ex_back = other.Ex_back; other.Ex_back = nullptr;
-        Ey_back = other.Ey_back; other.Ey_back = nullptr;
-        Bz_back = other.Bz_back; other.Bz_back = nullptr;
-        tmp1 = other.tmp1; other.tmp1 = nullptr;
-        tmp2 = other.tmp2; other.tmp2 = nullptr;
-        tmp3 = other.tmp3; other.tmp3 = nullptr;
+        Ex = other.Ex;
+        other.Ex = nullptr;
+        Ey = other.Ey;
+        other.Ey = nullptr;
+        Bz = other.Bz;
+        other.Bz = nullptr;
+        charge_density = other.charge_density;
+        other.charge_density = nullptr;
+        Jx = other.Jx;
+        other.Jx = nullptr;
+        Jy = other.Jy;
+        other.Jy = nullptr;
+        Ux = other.Ux;
+        other.Ux = nullptr;
+        Uy = other.Uy;
+        other.Uy = nullptr;
+        Lambda = other.Lambda;
+        other.Lambda = nullptr;
+        Gamma_x = other.Gamma_x;
+        other.Gamma_x = nullptr;
+        Gamma_y = other.Gamma_y;
+        other.Gamma_y = nullptr;
+        Ex_back = other.Ex_back;
+        other.Ex_back = nullptr;
+        Ey_back = other.Ey_back;
+        other.Ey_back = nullptr;
+        Bz_back = other.Bz_back;
+        other.Bz_back = nullptr;
+        tmp1 = other.tmp1;
+        other.tmp1 = nullptr;
+        tmp2 = other.tmp2;
+        other.tmp2 = nullptr;
+        tmp3 = other.tmp3;
+        other.tmp3 = nullptr;
     }
     return *this;
 }
@@ -127,23 +159,40 @@ void FieldArrays::allocate() {
 }
 
 void FieldArrays::destroy() {
-    if (Ex) free(Ex);
-    if (Ey) free(Ey);
-    if (Bz) free(Bz);
-    if (charge_density) free(charge_density);
-    if (Jx) free(Jx);
-    if (Jy) free(Jy);
-    if (Ux) free(Ux);
-    if (Uy) free(Uy);
-    if (Lambda) free(Lambda);
-    if (Gamma_x) free(Gamma_x);
-    if (Gamma_y) free(Gamma_y);
-    if (Ex_back) free(Ex_back);
-    if (Ey_back) free(Ey_back);
-    if (Bz_back) free(Bz_back);
-    if (tmp1) free(tmp1);
-    if (tmp2) free(tmp2);
-    if (tmp3) free(tmp3);
+    if (Ex)
+        free(Ex);
+    if (Ey)
+        free(Ey);
+    if (Bz)
+        free(Bz);
+    if (charge_density)
+        free(charge_density);
+    if (Jx)
+        free(Jx);
+    if (Jy)
+        free(Jy);
+    if (Ux)
+        free(Ux);
+    if (Uy)
+        free(Uy);
+    if (Lambda)
+        free(Lambda);
+    if (Gamma_x)
+        free(Gamma_x);
+    if (Gamma_y)
+        free(Gamma_y);
+    if (Ex_back)
+        free(Ex_back);
+    if (Ey_back)
+        free(Ey_back);
+    if (Bz_back)
+        free(Bz_back);
+    if (tmp1)
+        free(tmp1);
+    if (tmp2)
+        free(tmp2);
+    if (tmp3)
+        free(tmp3);
 
     Ex = Ey = Bz = nullptr;
     charge_density = Jx = Jy = nullptr;

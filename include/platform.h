@@ -17,166 +17,165 @@
 #include <cstdint>
 
 #ifdef USE_CPU
-    // =========================================================================
-    // CPU-only mode: No CUDA, regular C++ functions
-    // =========================================================================
+// =========================================================================
+// CPU-only mode: No CUDA, regular C++ functions
+// =========================================================================
 
-    #include <cstring>   // For memcpy, memset
-    #include <cstdlib>   // For malloc, free
-    #include <cstdio>    // For fprintf, stderr
-    #include <atomic>    // For atomic operations
+#include <atomic>  // For atomic operations
+#include <cstdio>  // For fprintf, stderr
+#include <cstdlib> // For malloc, free
+#include <cstring> // For memcpy, memset
 
-    #define DEVICE_HOST
-    #define DEVICE
-    #define GLOBAL
-    #define SHARED
-    #define CONSTANT
+#define DEVICE_HOST
+#define DEVICE
+#define GLOBAL
+#define SHARED
+#define CONSTANT
 
-    // Note: Don't define HOST - conflicts with MPI
+// Note: Don't define HOST - conflicts with MPI
 
-    // dim3 structure for CPU (compatible with CUDA dim3)
-    struct dim3 {
-        size_t x, y, z;
-        dim3(size_t x_ = 1, size_t y_ = 1, size_t z_ = 1) : x(x_), y(y_), z(z_) {}
-    };
+// dim3 structure for CPU (compatible with CUDA dim3)
+struct dim3 {
+    size_t x, y, z;
+    dim3(size_t x_ = 1, size_t y_ = 1, size_t z_ = 1) : x(x_), y(y_), z(z_) {}
+};
 
-    // Thread indexing (simulated for CPU)
-    namespace cpu_thread_sim {
-        extern thread_local dim3 blockIdx;
-        extern thread_local dim3 blockDim;
-        extern thread_local dim3 threadIdx;
-        extern thread_local dim3 gridDim;
-    }
+// Thread indexing (simulated for CPU)
+namespace cpu_thread_sim {
+extern thread_local dim3 blockIdx;
+extern thread_local dim3 blockDim;
+extern thread_local dim3 threadIdx;
+extern thread_local dim3 gridDim;
+} // namespace cpu_thread_sim
 
-    // Make thread simulation variables accessible without namespace
-    using cpu_thread_sim::blockIdx;
-    using cpu_thread_sim::blockDim;
-    using cpu_thread_sim::threadIdx;
-    using cpu_thread_sim::gridDim;
+// Make thread simulation variables accessible without namespace
+using cpu_thread_sim::blockDim;
+using cpu_thread_sim::blockIdx;
+using cpu_thread_sim::gridDim;
+using cpu_thread_sim::threadIdx;
 
-    // Atomic operations
-    inline void atomicAdd(double* address, double val) {
-        std::atomic<double>* atom = reinterpret_cast<std::atomic<double>*>(address);
-        double old = atom->load(std::memory_order_relaxed);
-        double desired;
-        do {
-            desired = old + val;
-        } while (!atom->compare_exchange_weak(old, desired,
-                                              std::memory_order_relaxed,
-                                              std::memory_order_relaxed));
-    }
+// Atomic operations
+inline void atomicAdd(double* address, double val) {
+    std::atomic<double>* atom = reinterpret_cast<std::atomic<double>*>(address);
+    double old = atom->load(std::memory_order_relaxed);
+    double desired;
+    do {
+        desired = old + val;
+    } while (!atom->compare_exchange_weak(old, desired, std::memory_order_relaxed,
+                                          std::memory_order_relaxed));
+}
 
-    inline void atomicAdd(float* address, float val) {
-        std::atomic<float>* atom = reinterpret_cast<std::atomic<float>*>(address);
-        float old = atom->load(std::memory_order_relaxed);
-        float desired;
-        do {
-            desired = old + val;
-        } while (!atom->compare_exchange_weak(old, desired,
-                                              std::memory_order_relaxed,
-                                              std::memory_order_relaxed));
-    }
+inline void atomicAdd(float* address, float val) {
+    std::atomic<float>* atom = reinterpret_cast<std::atomic<float>*>(address);
+    float old = atom->load(std::memory_order_relaxed);
+    float desired;
+    do {
+        desired = old + val;
+    } while (!atom->compare_exchange_weak(old, desired, std::memory_order_relaxed,
+                                          std::memory_order_relaxed));
+}
 
-    inline size_t atomicAdd(size_t* address, size_t val) {
-        std::atomic<size_t>* atom = reinterpret_cast<std::atomic<size_t>*>(address);
-        return atom->fetch_add(val, std::memory_order_relaxed);
-    }
+inline size_t atomicAdd(size_t* address, size_t val) {
+    std::atomic<size_t>* atom = reinterpret_cast<std::atomic<size_t>*>(address);
+    return atom->fetch_add(val, std::memory_order_relaxed);
+}
 
-    // Synchronization (no-op on CPU single-threaded)
-    inline void __syncthreads() {}
+// Synchronization (no-op on CPU single-threaded)
+inline void __syncthreads() {}
 
-    // Memory management (using template functions for proper type conversion)
-    template<typename T>
-    inline int cudaMalloc(T** ptr, size_t size) {
-        *ptr = static_cast<T*>(malloc(size));
-        return (*ptr != nullptr) ? 0 : 1;
-    }
+// Memory management (using template functions for proper type conversion)
+template <typename T> inline int cudaMalloc(T** ptr, size_t size) {
+    *ptr = static_cast<T*>(malloc(size));
+    return (*ptr != nullptr) ? 0 : 1;
+}
 
-    inline int cudaFree(void* ptr) {
-        free(ptr);
-        return 0;
-    }
+inline int cudaFree(void* ptr) {
+    free(ptr);
+    return 0;
+}
 
-    inline int cudaMemcpy(void* dst, const void* src, size_t size, int kind) {
-        (void)kind;  // Unused in CPU mode
-        memcpy(dst, src, size);
-        return 0;
-    }
+inline int cudaMemcpy(void* dst, const void* src, size_t size, int kind) {
+    (void)kind; // Unused in CPU mode
+    memcpy(dst, src, size);
+    return 0;
+}
 
-    inline int cudaMemset(void* ptr, int value, size_t size) {
-        memset(ptr, value, size);
-        return 0;
-    }
+inline int cudaMemset(void* ptr, int value, size_t size) {
+    memset(ptr, value, size);
+    return 0;
+}
 
-    #define cudaMemcpyHostToDevice 0
-    #define cudaMemcpyDeviceToHost 0
-    #define cudaMemcpyDeviceToDevice 0
-    #define cudaDeviceSynchronize() 0
-    #define cudaGetLastError() 0
-    #define cudaSuccess 0
-    #define cudaSetDevice(id) 0
+#define cudaMemcpyHostToDevice 0
+#define cudaMemcpyDeviceToHost 0
+#define cudaMemcpyDeviceToDevice 0
+#define cudaDeviceSynchronize() 0
+#define cudaGetLastError() 0
+#define cudaSuccess 0
+#define cudaSetDevice(id) 0
 
-    typedef int cudaError_t;
-    inline const char* cudaGetErrorString(cudaError_t) { return "CPU mode"; }
+typedef int cudaError_t;
+inline const char* cudaGetErrorString(cudaError_t) {
+    return "CPU mode";
+}
 
-    // Kernel launch emulation
-    namespace cpu_kernel {
-        template<typename Func, typename... Args>
-        void launch_kernel(Func kernel, dim3 grid, dim3 block, Args... args) {
-            // Sequential execution for CPU
-            for (size_t bz = 0; bz < grid.z; bz++) {
-                for (size_t by = 0; by < grid.y; by++) {
-                    for (size_t bx = 0; bx < grid.x; bx++) {
-                        for (size_t tz = 0; tz < block.z; tz++) {
-                            for (size_t ty = 0; ty < block.y; ty++) {
-                                for (size_t tx = 0; tx < block.x; tx++) {
-                                    cpu_thread_sim::blockIdx.x = bx;
-                                    cpu_thread_sim::blockIdx.y = by;
-                                    cpu_thread_sim::blockIdx.z = bz;
-                                    cpu_thread_sim::threadIdx.x = tx;
-                                    cpu_thread_sim::threadIdx.y = ty;
-                                    cpu_thread_sim::threadIdx.z = tz;
-                                    cpu_thread_sim::blockDim.x = block.x;
-                                    cpu_thread_sim::blockDim.y = block.y;
-                                    cpu_thread_sim::blockDim.z = block.z;
-                                    cpu_thread_sim::gridDim.x = grid.x;
-                                    cpu_thread_sim::gridDim.y = grid.y;
-                                    cpu_thread_sim::gridDim.z = grid.z;
+// Kernel launch emulation
+namespace cpu_kernel {
+template <typename Func, typename... Args>
+void launch_kernel(Func kernel, dim3 grid, dim3 block, Args... args) {
+    // Sequential execution for CPU
+    for (size_t bz = 0; bz < grid.z; bz++) {
+        for (size_t by = 0; by < grid.y; by++) {
+            for (size_t bx = 0; bx < grid.x; bx++) {
+                for (size_t tz = 0; tz < block.z; tz++) {
+                    for (size_t ty = 0; ty < block.y; ty++) {
+                        for (size_t tx = 0; tx < block.x; tx++) {
+                            cpu_thread_sim::blockIdx.x = bx;
+                            cpu_thread_sim::blockIdx.y = by;
+                            cpu_thread_sim::blockIdx.z = bz;
+                            cpu_thread_sim::threadIdx.x = tx;
+                            cpu_thread_sim::threadIdx.y = ty;
+                            cpu_thread_sim::threadIdx.z = tz;
+                            cpu_thread_sim::blockDim.x = block.x;
+                            cpu_thread_sim::blockDim.y = block.y;
+                            cpu_thread_sim::blockDim.z = block.z;
+                            cpu_thread_sim::gridDim.x = grid.x;
+                            cpu_thread_sim::gridDim.y = grid.y;
+                            cpu_thread_sim::gridDim.z = grid.z;
 
-                                    kernel(args...);
-                                }
-                            }
+                            kernel(args...);
                         }
                     }
                 }
             }
         }
     }
+}
+} // namespace cpu_kernel
 
-    // Macro for kernel launch: kernel<<<grid, block>>>(args...)
-    #define KERNEL_LAUNCH(kernel, grid, block, ...) \
-        cpu_kernel::launch_kernel(kernel, grid, block, __VA_ARGS__)
+// Macro for kernel launch: kernel<<<grid, block>>>(args...)
+#define KERNEL_LAUNCH(kernel, grid, block, ...)                                                    \
+    cpu_kernel::launch_kernel(kernel, grid, block, __VA_ARGS__)
 
 #else
-    // =========================================================================
-    // GPU mode: Full CUDA support
-    // =========================================================================
+// =========================================================================
+// GPU mode: Full CUDA support
+// =========================================================================
 
-    #include <cuda_runtime.h>
-    #include <cstdio>    // For fprintf, stderr
-    #include <cstdlib>   // For exit
+#include <cuda_runtime.h>
 
-    #define DEVICE_HOST __device__ __host__
-    #define DEVICE __device__
-    #define GLOBAL __global__
-    #define SHARED __shared__
-    #define CONSTANT __constant__
+#include <cstdio>  // For fprintf, stderr
+#include <cstdlib> // For exit
 
-    // Note: Don't define HOST - conflicts with MPI
+#define DEVICE_HOST __device__ __host__
+#define DEVICE __device__
+#define GLOBAL __global__
+#define SHARED __shared__
+#define CONSTANT __constant__
 
-    // Kernel launch: kernel<<<grid, block>>>(args...)
-    #define KERNEL_LAUNCH(kernel, grid, block, ...) \
-        kernel<<<grid, block>>>(__VA_ARGS__)
+// Note: Don't define HOST - conflicts with MPI
+
+// Kernel launch: kernel<<<grid, block>>>(args...)
+#define KERNEL_LAUNCH(kernel, grid, block, ...) kernel<<<grid, block>>>(__VA_ARGS__)
 
 #endif
 
@@ -187,49 +186,47 @@
 namespace jericho {
 namespace platform {
 
-    /**
-     * @brief Check if running on GPU
-     */
-    inline bool is_gpu_mode() {
+/**
+ * @brief Check if running on GPU
+ */
+inline bool is_gpu_mode() {
 #ifdef USE_CPU
-        return false;
+    return false;
 #else
-        return true;
+    return true;
 #endif
-    }
+}
 
-    /**
-     * @brief Get platform name
-     */
-    inline const char* get_platform_name() {
+/**
+ * @brief Get platform name
+ */
+inline const char* get_platform_name() {
 #ifdef USE_CPU
-        return "CPU";
+    return "CPU";
 #else
-        return "GPU (CUDA)";
+    return "GPU (CUDA)";
 #endif
-    }
+}
 
-    /**
-     * @brief Check CUDA error (CPU mode: no-op)
-     */
-    inline void check_error([[maybe_unused]] cudaError_t err,
-                           [[maybe_unused]] const char* file,
-                           [[maybe_unused]] int line) {
+/**
+ * @brief Check CUDA error (CPU mode: no-op)
+ */
+inline void check_error([[maybe_unused]] cudaError_t err, [[maybe_unused]] const char* file,
+                        [[maybe_unused]] int line) {
 #ifndef USE_CPU
-        if (err != cudaSuccess) {
-            fprintf(stderr, "CUDA error at %s:%d - %s\n",
-                   file, line, cudaGetErrorString(err));
-            exit(1);
-        }
-#endif
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA error at %s:%d - %s\n", file, line, cudaGetErrorString(err));
+        exit(1);
     }
+#endif
+}
 
 } // namespace platform
 } // namespace jericho
 
 // Error checking macro
-#define PLATFORM_CHECK(call) \
-    do { \
-        cudaError_t err = call; \
-        jericho::platform::check_error(err, __FILE__, __LINE__); \
-    } while(0)
+#define PLATFORM_CHECK(call)                                                                       \
+    do {                                                                                           \
+        cudaError_t err = call;                                                                    \
+        jericho::platform::check_error(err, __FILE__, __LINE__);                                   \
+    } while (0)

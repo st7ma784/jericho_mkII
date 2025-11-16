@@ -1,11 +1,11 @@
 # Jericho Mk II - GPU-Accelerated Hybrid PIC-MHD
 
-[![Documentation Status](https://github.com/yourusername/jericho_mkII/workflows/docs/badge.svg)](https://yourusername.github.io/jericho_mkII/)
-[![Build Status](https://github.com/yourusername/jericho_mkII/workflows/build/badge.svg)](https://github.com/yourusername/jericho_mkII/actions)
+[![Documentation Status](https://github.com/st7ma784/jericho_mkII/workflows/docs/badge.svg)](https://st7ma784.github.io/jericho_mkII/)
+[![Build Status](https://github.com/st7ma784/jericho_mkII/workflows/build/badge.svg)](https://github.com/st7ma784/jericho_mkII/actions)
 
 **Next-generation hybrid Particle-in-Cell / Magnetohydrodynamic plasma simulation code**
 
-Jericho Mk II is a complete rewrite of the JERICHO plasma simulation code, designed from the ground up for modern GPU+MPI HPC architectures. It combines kinetic ion treatment with fluid electron modeling for efficient simulation of magnetospheric plasma dynamics.
+Jericho Mk II is a complete rewrite of the JERICHO plasma simulation code, designed from the ground up for modern GPU+MPI HPC architectures. It combines kinetic ion treatment with fluid electron modeling for efficient simulation of magnetospheric plasma dynamics. We have implemented improved checks to ensure energy conservation and model other interesting factors and phenomenom.
 
 ## Key Features
 
@@ -160,7 +160,7 @@ jericho_mkII/
 
 ## Documentation
 
-Full documentation available at: https://yourusername.github.io/jericho_mkII/
+Full documentation available at: https://st7ma784.github.io/jericho_mkII/
 
 - **[Getting Started](docs/source/getting_started.rst)** - Installation and first run
 - **[User Guide](docs/source/user_guide.rst)** - Configuration and usage
@@ -174,10 +174,10 @@ If you use Jericho Mk II in your research, please cite:
 
 ```bibtex
 @software{jericho_mkII,
-  author = {Wiggs, Josh and Arridge, Chris and Greenyer, George},
+  author = {Wiggs, Josh and Arridge, Chris and Greenyer, George and Mander, Steve},
   title = {Jericho Mk II: GPU-Accelerated Hybrid PIC-MHD Code},
   year = {2025},
-  url = {https://github.com/yourusername/jericho_mkII}
+  url = {https://github.com/st7ma784/jericho_mkII}
 }
 ```
 
@@ -195,4 +195,4 @@ MIT License - See [LICENSE](LICENSE) for details
 
 - Josh Wiggs - j.wiggs@lancaster.ac.uk
 - Chris Arridge - c.arridge@lancaster.ac.uk
-- GitHub Issues: https://github.com/yourusername/jericho_mkII/issues
+- GitHub Issues: https://github.com/st7ma784/jericho_mkII/issues

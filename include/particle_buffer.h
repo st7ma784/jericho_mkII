@@ -18,6 +18,7 @@
 #pragma once
 
 #include "platform.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -46,22 +47,22 @@ namespace jericho {
  * coalesced memory transaction with SoA, but scattered transactions with AoS.
  */
 class ParticleBuffer {
-public:
+  public:
     // =========================================================================
     // Data members (stored on GPU device memory)
     // =========================================================================
 
-    double* x;          ///< X positions [m] - GPU device memory
-    double* y;          ///< Y positions [m] - GPU device memory
-    double* vx;         ///< X velocities [m/s] - GPU device memory
-    double* vy;         ///< Y velocities [m/s] - GPU device memory
-    double* weight;     ///< Statistical weights (macroparticle multiplicity)
-    uint8_t* type;      ///< Species type index (0 = electrons, 1+ = ions)
-    bool* active;       ///< Active flag for dynamic particle management
+    double* x;      ///< X positions [m] - GPU device memory
+    double* y;      ///< Y positions [m] - GPU device memory
+    double* vx;     ///< X velocities [m/s] - GPU device memory
+    double* vy;     ///< Y velocities [m/s] - GPU device memory
+    double* weight; ///< Statistical weights (macroparticle multiplicity)
+    uint8_t* type;  ///< Species type index (0 = electrons, 1+ = ions)
+    bool* active;   ///< Active flag for dynamic particle management
 
-    size_t capacity;    ///< Allocated capacity (total slots)
-    size_t count;       ///< Current active particle count
-    int device_id;      ///< CUDA device ID where buffer resides
+    size_t capacity; ///< Allocated capacity (total slots)
+    size_t count;    ///< Current active particle count
+    int device_id;   ///< CUDA device ID where buffer resides
 
     // Free slot management for efficient insert/remove
     size_t* free_slots; ///< Stack of free indices (GPU device memory)
@@ -72,10 +73,10 @@ public:
     // =========================================================================
 
     struct Metadata {
-        size_t particles_added;      ///< Total particles added (inflow)
-        size_t particles_removed;    ///< Total particles removed (outflow)
-        size_t particles_reflected;  ///< Total particles reflected
-        size_t max_particles_seen;   ///< Peak particle count
+        size_t particles_added;     ///< Total particles added (inflow)
+        size_t particles_removed;   ///< Total particles removed (outflow)
+        size_t particles_reflected; ///< Total particles reflected
+        size_t max_particles_seen;  ///< Peak particle count
     } stats;
 
     // =========================================================================
@@ -156,8 +157,8 @@ public:
      *
      * @note If buffer is full, automatically resizes with 1.5x growth factor
      */
-    size_t add_particle(double px, double py, double pvx, double pvy,
-                       double pweight, uint8_t ptype);
+    size_t add_particle(double px, double py, double pvx, double pvy, double pweight,
+                        uint8_t ptype);
 
     /**
      * @brief Remove particle at index (outflow boundary)
@@ -182,8 +183,7 @@ public:
      *       Uses batched GPU memory transfers.
      */
     void add_particles_batch(const double* positions, const double* velocities,
-                            const double* weights, const uint8_t* types,
-                            size_t n_particles);
+                             const double* weights, const uint8_t* types, size_t n_particles);
 
     // =========================================================================
     // Data transfer (CPU <-> GPU)
@@ -198,10 +198,9 @@ public:
      *
      * @note Uses asynchronous CUDA memcpy for better performance
      */
-    void copy_to_device(const double* h_x, const double* h_y,
-                       const double* h_vx, const double* h_vy,
-                       const double* h_weight, const uint8_t* h_type,
-                       size_t n, size_t offset = 0);
+    void copy_to_device(const double* h_x, const double* h_y, const double* h_vx,
+                        const double* h_vy, const double* h_weight, const uint8_t* h_type, size_t n,
+                        size_t offset = 0);
 
     /**
      * @brief Copy particle data from device to host
@@ -210,25 +209,28 @@ public:
      * @param n Number of particles to copy
      * @param offset Offset in device arrays to start copying from
      */
-    void copy_to_host(double* h_x, double* h_y, double* h_vx, double* h_vy,
-                     double* h_weight, uint8_t* h_type,
-                     size_t n, size_t offset = 0) const;
+    void copy_to_host(double* h_x, double* h_y, double* h_vx, double* h_vy, double* h_weight,
+                      uint8_t* h_type, size_t n, size_t offset = 0) const;
 
     /**
      * @brief Get particle count (active particles only)
      */
-    size_t get_count() const { return count; }
+    size_t get_count() const {
+        return count;
+    }
 
     /**
      * @brief Get buffer capacity
      */
-    size_t get_capacity() const { return capacity; }
+    size_t get_capacity() const {
+        return capacity;
+    }
 
     /**
      * @brief Get memory usage in bytes
      */
     size_t get_memory_bytes() const {
-        return capacity * (sizeof(double)*5 + sizeof(uint8_t) + sizeof(bool));
+        return capacity * (sizeof(double) * 5 + sizeof(uint8_t) + sizeof(bool));
     }
 
     /**
@@ -254,12 +256,10 @@ public:
  * @param v_thermal Thermal velocity for Maxwellian distribution [m/s]
  * @param seed Random seed
  */
-void initialize_uniform(ParticleBuffer& buffer,
-                       double x_min, double x_max, double y_min, double y_max,
-                       int particles_per_cell, int nx, int ny,
-                       uint8_t type, double weight,
-                       double vx_mean, double vy_mean, double v_thermal,
-                       unsigned int seed = 42);
+void initialize_uniform(ParticleBuffer& buffer, double x_min, double x_max, double y_min,
+                        double y_max, int particles_per_cell, int nx, int ny, uint8_t type,
+                        double weight, double vx_mean, double vy_mean, double v_thermal,
+                        unsigned int seed = 42);
 
 /**
  * @brief Initialize particles with Maxwellian velocity distribution
@@ -269,9 +269,7 @@ void initialize_uniform(ParticleBuffer& buffer,
  * @param vx_drift,vy_drift Drift velocity [m/s]
  * @param seed Random seed
  */
-void initialize_maxwellian_velocities(ParticleBuffer& buffer,
-                                     double v_thermal,
-                                     double vx_drift, double vy_drift,
-                                     unsigned int seed = 42);
+void initialize_maxwellian_velocities(ParticleBuffer& buffer, double v_thermal, double vx_drift,
+                                      double vy_drift, unsigned int seed = 42);
 
 } // namespace jericho

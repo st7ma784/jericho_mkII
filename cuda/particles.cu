@@ -9,6 +9,7 @@
 
 #include "../include/particle_buffer.h"
 #include "../include/platform.h"
+
 #include <cmath>
 
 namespace jericho {
@@ -21,10 +22,8 @@ namespace cuda {
 /**
  * @brief Bilinear interpolation from grid to particle position
  */
-DEVICE_HOST inline double bilinear_interp(const double* field, int nx,
-                                          double px, double py,
-                                          double dx, double dy,
-                                          double x_min, double y_min) {
+DEVICE_HOST inline double bilinear_interp(const double* field, int nx, double px, double py,
+                                          double dx, double dy, double x_min, double y_min) {
     // Convert particle position to grid coordinates
     double gx = (px - x_min) / dx;
     double gy = (py - y_min) / dy;
@@ -34,27 +33,24 @@ DEVICE_HOST inline double bilinear_interp(const double* field, int nx,
     int iy = static_cast<int>(floor(gy));
 
     // Get interpolation weights
-    double fx = gx - ix;  // Fractional x
-    double fy = gy - iy;  // Fractional y
+    double fx = gx - ix; // Fractional x
+    double fy = gy - iy; // Fractional y
 
     // Bilinear interpolation coefficients
-    double w00 = (1.0 - fx) * (1.0 - fy);  // Lower-left
-    double w10 = fx * (1.0 - fy);          // Lower-right
-    double w01 = (1.0 - fx) * fy;          // Upper-left
-    double w11 = fx * fy;                  // Upper-right
+    double w00 = (1.0 - fx) * (1.0 - fy); // Lower-left
+    double w10 = fx * (1.0 - fy);         // Lower-right
+    double w01 = (1.0 - fx) * fy;         // Upper-left
+    double w11 = fx * fy;                 // Upper-right
 
     // Interpolate (assumes periodic or ghost cells handle boundaries)
-    return w00 * field[iy * nx + ix] +
-           w10 * field[iy * nx + (ix + 1)] +
-           w01 * field[(iy + 1) * nx + ix] +
-           w11 * field[(iy + 1) * nx + (ix + 1)];
+    return w00 * field[iy * nx + ix] + w10 * field[iy * nx + (ix + 1)] +
+           w01 * field[(iy + 1) * nx + ix] + w11 * field[(iy + 1) * nx + (ix + 1)];
 }
 
 /**
  * @brief Boris particle pusher (velocity update)
  */
-DEVICE_HOST inline void boris_push(double& vx, double& vy,
-                                   double Ex, double Ey, double Bz,
+DEVICE_HOST inline void boris_push(double& vx, double& vy, double Ex, double Ey, double Bz,
                                    double q_over_m, double dt) {
     // Constants
     const double half_dt = 0.5 * dt;
@@ -65,9 +61,9 @@ DEVICE_HOST inline void boris_push(double& vx, double& vy,
     double vy_minus = vy + qm_half_dt * Ey;
 
     // Step 2: Rotation by B (Boris rotation)
-    double t = qm_half_dt * Bz;  // Rotation parameter
+    double t = qm_half_dt * Bz; // Rotation parameter
     double t2 = t * t;
-    double s = 2.0 * t / (1.0 + t2);  // Rotation factor
+    double s = 2.0 * t / (1.0 + t2); // Rotation factor
 
     double vx_prime = vx_minus + vy_minus * t;
     double vy_prime = vy_minus - vx_minus * t;
@@ -87,33 +83,21 @@ DEVICE_HOST inline void boris_push(double& vx, double& vy,
 /**
  * @brief Kernel: Advance particle positions and velocities
  */
-GLOBAL void advance_particles_kernel(
-    double* x,
-    double* y,
-    double* vx,
-    double* vy,
-    const double* weight,
-    const uint8_t* type,
-    const bool* active,
-    const double* Ex,
-    const double* Ey,
-    const double* Bz,
-    int nx, int ny,
-    double dx, double dy,
-    double x_min, double y_min,
-    double dt,
-    const double* q_over_m_by_type,
-    size_t n_particles)
-{
+GLOBAL void advance_particles_kernel(double* x, double* y, double* vx, double* vy,
+                                     const double* weight, const uint8_t* type, const bool* active,
+                                     const double* Ex, const double* Ey, const double* Bz, int nx,
+                                     int ny, double dx, double dy, double x_min, double y_min,
+                                     double dt, const double* q_over_m_by_type,
+                                     size_t n_particles) {
     // Thread index = particle index
 #ifdef USE_CPU
-    size_t i = blockIdx.x * blockDim.x +
-               threadIdx.x;
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 #else
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 #endif
 
-    if (i >= n_particles || !active[i]) return;
+    if (i >= n_particles || !active[i])
+        return;
 
     // Get particle data (coalesced reads!)
     double px = x[i];
@@ -147,31 +131,20 @@ GLOBAL void advance_particles_kernel(
 /**
  * @brief Kernel: Particle-to-grid (P2G) interpolation
  */
-GLOBAL void particle_to_grid_kernel(
-    const double* x,
-    const double* y,
-    const double* vx,
-    const double* vy,
-    const double* weight,
-    const uint8_t* type,
-    const bool* active,
-    double* charge_density,
-    double* current_x,
-    double* current_y,
-    int nx, int ny,
-    double dx, double dy,
-    double x_min, double y_min,
-    const double* q_by_type,
-    size_t n_particles)
-{
+GLOBAL void particle_to_grid_kernel(const double* x, const double* y, const double* vx,
+                                    const double* vy, const double* weight, const uint8_t* type,
+                                    const bool* active, double* charge_density, double* current_x,
+                                    double* current_y, int nx, int ny, double dx, double dy,
+                                    double x_min, double y_min, const double* q_by_type,
+                                    size_t n_particles) {
 #ifdef USE_CPU
-    size_t i = blockIdx.x * blockDim.x +
-               threadIdx.x;
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 #else
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 #endif
 
-    if (i >= n_particles || !active[i]) return;
+    if (i >= n_particles || !active[i])
+        return;
 
     // Get particle data
     double px = x[i];
@@ -228,12 +201,9 @@ GLOBAL void particle_to_grid_kernel(
 /**
  * @brief Advance all particles by one timestep
  */
-void advance_particles(ParticleBuffer& buffer,
-                      const double* Ex, const double* Ey, const double* Bz,
-                      int nx, int ny, double dx, double dy,
-                      double x_min, double y_min, double dt,
-                      const double* q_over_m_by_type)
-{
+void advance_particles(ParticleBuffer& buffer, const double* Ex, const double* Ey, const double* Bz,
+                       int nx, int ny, double dx, double dy, double x_min, double y_min, double dt,
+                       const double* q_over_m_by_type) {
     // Launch configuration
     const int threads_per_block = 256;
     const int num_blocks = (buffer.count + threads_per_block - 1) / threads_per_block;
@@ -243,27 +213,18 @@ void advance_particles(ParticleBuffer& buffer,
     dim3 grid(num_blocks, 1, 1);
     dim3 block(threads_per_block, 1, 1);
 
-    KERNEL_LAUNCH(advance_particles_kernel, grid, block,
-        buffer.x, buffer.y, buffer.vx, buffer.vy,
-        buffer.weight, buffer.type, buffer.active,
-        Ex, Ey, Bz,
-        nx, ny, dx, dy, x_min, y_min, dt,
-        q_over_m_by_type, buffer.count
-    );
+    KERNEL_LAUNCH(advance_particles_kernel, grid, block, buffer.x, buffer.y, buffer.vx, buffer.vy,
+                  buffer.weight, buffer.type, buffer.active, Ex, Ey, Bz, nx, ny, dx, dy, x_min,
+                  y_min, dt, q_over_m_by_type, buffer.count);
 #else
     // GPU execution
     advance_particles_kernel<<<num_blocks, threads_per_block>>>(
-        buffer.x, buffer.y, buffer.vx, buffer.vy,
-        buffer.weight, buffer.type, buffer.active,
-        Ex, Ey, Bz,
-        nx, ny, dx, dy, x_min, y_min, dt,
-        q_over_m_by_type, buffer.count
-    );
+        buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.weight, buffer.type, buffer.active, Ex, Ey,
+        Bz, nx, ny, dx, dy, x_min, y_min, dt, q_over_m_by_type, buffer.count);
 
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA error in advance_particles: %s\n",
-                cudaGetErrorString(err));
+        fprintf(stderr, "CUDA error in advance_particles: %s\n", cudaGetErrorString(err));
     }
 #endif
 }
@@ -271,12 +232,9 @@ void advance_particles(ParticleBuffer& buffer,
 /**
  * @brief Interpolate particles to grid (P2G operation)
  */
-void particle_to_grid(const ParticleBuffer& buffer,
-                     double* charge_density, double* current_x, double* current_y,
-                     int nx, int ny, double dx, double dy,
-                     double x_min, double y_min,
-                     const double* q_by_type)
-{
+void particle_to_grid(const ParticleBuffer& buffer, double* charge_density, double* current_x,
+                      double* current_y, int nx, int ny, double dx, double dy, double x_min,
+                      double y_min, const double* q_by_type) {
     const int threads_per_block = 256;
     const int num_blocks = (buffer.count + threads_per_block - 1) / threads_per_block;
 
@@ -284,26 +242,18 @@ void particle_to_grid(const ParticleBuffer& buffer,
     dim3 grid(num_blocks, 1, 1);
     dim3 block(threads_per_block, 1, 1);
 
-    KERNEL_LAUNCH(particle_to_grid_kernel, grid, block,
-        buffer.x, buffer.y, buffer.vx, buffer.vy,
-        buffer.weight, buffer.type, buffer.active,
-        charge_density, current_x, current_y,
-        nx, ny, dx, dy, x_min, y_min,
-        q_by_type, buffer.count
-    );
+    KERNEL_LAUNCH(particle_to_grid_kernel, grid, block, buffer.x, buffer.y, buffer.vx, buffer.vy,
+                  buffer.weight, buffer.type, buffer.active, charge_density, current_x, current_y,
+                  nx, ny, dx, dy, x_min, y_min, q_by_type, buffer.count);
 #else
     particle_to_grid_kernel<<<num_blocks, threads_per_block>>>(
-        buffer.x, buffer.y, buffer.vx, buffer.vy,
-        buffer.weight, buffer.type, buffer.active,
-        charge_density, current_x, current_y,
-        nx, ny, dx, dy, x_min, y_min,
-        q_by_type, buffer.count
-    );
+        buffer.x, buffer.y, buffer.vx, buffer.vy, buffer.weight, buffer.type, buffer.active,
+        charge_density, current_x, current_y, nx, ny, dx, dy, x_min, y_min, q_by_type,
+        buffer.count);
 
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA error in particle_to_grid: %s\n",
-                cudaGetErrorString(err));
+        fprintf(stderr, "CUDA error in particle_to_grid: %s\n", cudaGetErrorString(err));
     }
 #endif
 }
