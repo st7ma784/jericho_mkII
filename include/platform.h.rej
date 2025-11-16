@@ -1,0 +1,11 @@
+--- include/platform.h
++++ include/platform.h
+@@ -161,6 +161,8 @@
+     // GPU mode: Full CUDA support
+     // =========================================================================
+ 
++    #include <cstdio>    // For fprintf, stderr
++    #include <cstdlib>   // For exit
+     #include <cuda_runtime.h>
+ 
+     #define DEVICE_HOST __device__ __host__

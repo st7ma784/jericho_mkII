@@ -1,0 +1,75 @@
+# Minimal test configuration for CPU comparison
+# Jericho Mk II Configuration File
+
+[simulation]
+name = "minimal_test"
+output_dir = "/data/jericho_mkII_test_run"
+
+# Timestep and duration - MINIMAL FOR QUICK TEST
+dt = 0.01              # Timestep
+n_steps = 10           # Very small test - just 10 steps
+use_cam = true
+cam_alpha = 0.5
+
+[grid]
+# Grid resolution - MINIMAL
+nx = 32
+ny = 32
+
+# Spatial domain - MINIMAL
+x_min = -5000.0   # [meters]
+x_max =  5000.0
+y_min = -5000.0
+y_max =  5000.0
+nghost = 2
+
+[mpi]
+# MPI decomposition - single rank for simple testing
+npx = 1
+npy = 1
+cuda_aware = false
+
+[boundaries]
+# Boundary conditions for particles
+left = "periodic"
+right = "periodic"
+bottom = "periodic"
+top = "periodic"
+
+[fields]
+# Initial magnetic field
+magnetic_field_type = "uniform"
+B0 = 200.0e-6      # [T]
+L = 1.0
+
+# Background electric field
+Ex0 = 0.0
+Ey0 = 0.0
+Bz0 = 0.0
+
+[output]
+# Output configuration
+output_dir = "/data/jericho_mkII_test_run"
+field_cadence = 5
+particle_cadence = 5
+checkpoint_cadence = 10
+compress_output = false
+output_particles = false
+output_Ex = true
+output_Ey = true
+output_Bz = true
+output_charge = true
+output_current = true
+output_flow_velocity = false
+
+# Species: H+ ions
+[[species]]
+name = "H+"
+charge = 1.602e-19
+mass = 1.673e-27
+temperature = 1.0e6
+density = 1.0e5
+particles_per_cell = 1
+drift_vx = 0.0
+drift_vy = 0.0
+

@@ -1,0 +1,261 @@
+# Production Test Configuration - Jericho Mk II
+# Adapted from: /home/user/Documents/jericho/tidy_jeri/inputs/science_tests/fug_data.toml
+# Purpose: Validate Phase 11 electromagnetic solver with realistic particle distribution
+# Date: November 15, 2025
+
+title = "Jericho Mk II Production Test - FUG-style Boundary Simulation"
+authors = "Jericho Mk II Development Team"
+brief = "Validates electromagnetic field solver with inflow/outflow boundaries and particle dynamics"
+
+# ============================================================================
+# Simulation Configuration
+# ============================================================================
+
+[simulation]
+    # Grid configuration
+    nx_global = 256                         # Global grid size in X (elements distributed across ranks)
+    ny_global = 256                         # Global grid size in Y
+    
+    # Physical domain (in normalized units)
+    x_min = -12.8
+    x_max = 12.8
+    y_min = -12.8
+    y_max = 12.8
+    
+    # Mesh spacing
+    dx = 0.1
+    dy = 0.1
+    
+    # Time stepping
+    dt = 0.01                               # Time step (seconds or normalized)
+    dt_cfl_fraction = 0.5                   # CFL safety factor for explicit EM solver
+    max_steps = 1000                        # Run for 1000 time steps (~10 seconds)
+    
+    # Output cadence
+    diagnostics_interval = 10               # Output diagnostics every 10 steps
+    fields_cadence = 100                    # Save fields every 100 steps
+    particles_cadence = 100                 # Save particles every 100 steps
+
+# ============================================================================
+# Particle Configuration
+# ============================================================================
+
+[particles]
+    # Initial particle distribution
+    num_particles_per_cell = 50             # 50 particles per cell → 256×256×50 = ~3.3M total
+    
+    # Species definition
+    species = [
+        {
+            name = "H+",
+            charge = 1.0,                   # Elementary charge
+            mass = 1.0,                     # Proton mass
+            temperature = 1.0,              # Temperature (eV)
+            density = 1.0e5,                # Particle density (m^-3)
+            bulk_velocity_x = 0.0,          # Drift velocity X
+            bulk_velocity_y = 100.0         # Drift velocity Y (inflow)
+        }
+    ]
+    
+    # Initial velocity distribution: Maxwellian
+    velocity_distribution = "maxwellian"
+    
+    # Random seed for reproducibility
+    random_seed = 1524
+
+# ============================================================================
+# Electromagnetic Field Configuration
+# ============================================================================
+
+[fields]
+    # Initial electric field
+    E_x_initial = 0.0                       # Ex = 0 (uniform)
+    E_y_initial = 0.0                       # Ey = 0 (uniform)
+    
+    # Initial magnetic field (uniform - matches old Jericho)
+    B_z_initial = 10.0e-8                   # Bz = 100 nT (uniform field)
+    
+    # Field solver method (Phase 11)
+    poisson_solver = "sor"                  # Use SOR iterative method
+    poisson_max_iterations = 100
+    poisson_tolerance = 1.0e-5
+    
+    ampere_time_stepping = "predictor-corrector"  # Use PC for better accuracy
+    
+    # Energy monitoring
+    track_em_energy = true
+    energy_conservation_tolerance = 0.05    # Allow ±5% error (tighten to ±1% in final validation)
+
+# ============================================================================
+# Boundary Conditions
+# ============================================================================
+
+[boundaries]
+    # X boundaries: Periodic (wrap-around)
+    x_bc = "periodic"
+    
+    # Y boundaries: Inflow (y_min) and Outflow (y_max)
+    y_min_bc = "inflow"                     # Particles injected at y_min
+    y_max_bc = "outflow"                    # Particles exit at y_max
+    
+    # Inflow parameters
+    inflow_particle_rate = 1.0              # Particles per unit time
+    inflow_temperature = 1.0                # Same as bulk
+    inflow_density = 1.0e5                  # Same as bulk
+    inflow_bulk_velocity_y = 100.0          # Inflow drifts in +Y direction
+
+# ============================================================================
+# MPI Configuration
+# ============================================================================
+
+[mpi]
+    # Domain decomposition
+    npx = 1                                 # Number of ranks in X direction (auto-detects if 0)
+    npy = 1                                 # Number of ranks in Y direction
+    
+    # Communication
+    communication_pattern = "non-blocking"  # Use Phase 10 optimizations
+    ghost_cell_exchange_method = "isend_irecv"  # Non-blocking MPI
+    
+    # Synchronization
+    reduction_interval = 10                 # Batched diagnostics every 10 steps
+    barrier_enabled = false                 # Phase 10: Remove unnecessary barriers
+
+# ============================================================================
+# Output Configuration
+# ============================================================================
+
+[output]
+    # Output directory
+    folder = "./outputs/production_test_fug"
+    
+    # File formats
+    format = "binary"                       # binary or hdf5
+    
+    # Spinup/spindown output
+    write_initial_state = true
+    write_final_state = true
+    
+    # Trajectory tracking
+    track_particles = true
+    num_tracked_particles = 100             # Track 100 particles for validation
+    
+    # Statistics to track
+    tracked_quantities = [
+        "num_particles",                    # Total particle count
+        "kinetic_energy",                   # ∫ ½m|v|² dV
+        "electric_field_energy",            # ∫ ½ε₀|E|² dV
+        "magnetic_field_energy",            # ∫ ½B²/μ₀ dV
+        "total_energy",                     # KE + EM energy
+        "energy_conservation_error",        # |ΔE/E| per step
+        "global_current_magnitude"          # ∫|J| dV
+    ]
+
+# ============================================================================
+# Validation Targets (Phase 11.4)
+# ============================================================================
+
+[validation]
+    # Energy conservation
+    energy_error_tolerance = 0.05           # ±5% for initial testing (tighten to ±1%)
+    energy_check_interval = 100             # Check every 100 steps
+    
+    # Particle conservation
+    particle_number_check = true
+    particle_tolerance = 0.01               # ±1% tolerance
+    
+    # Field accuracy
+    poisson_residual_check = true
+    poisson_residual_tolerance = 1.0e-5
+    
+    # Scaling tests
+    weak_scaling_test = false               # Disabled for single-process test
+    strong_scaling_test = false
+    
+    # Profiling
+    enable_profiling = true
+    profile_intervals = [100, 200, 500, 1000]  # Profile at these step counts
+
+# ============================================================================
+# Hardware Configuration
+# ============================================================================
+
+[hardware]
+    # GPU acceleration
+    use_gpu = false                         # Start with CPU mode
+    gpu_device_id = 0
+    
+    # CPU optimization
+    use_openmp = true
+    num_threads = -1                        # Auto-detect number of threads
+    
+    # Memory
+    memory_per_rank_mb = 1024               # ~1 GB per rank
+    
+    # Performance monitoring
+    enable_hwcounters = false               # Disable hardware counters for now
+    enable_profiling = true
+
+# ============================================================================
+# Test-Specific Parameters
+# ============================================================================
+
+[test_parameters]
+    # This is a weak scaling test:
+    # - Single rank: 256×256 = 65K grid points, ~3.3M particles
+    # - 4 ranks: 128×256 per rank = 32.8K grid points, ~820K particles each
+    # - 16 ranks: 64×128 per rank = 8.2K grid points, ~205K particles each
+    
+    test_mode = "production"                # production, validation, or benchmark
+    target_duration_seconds = 20.0          # Run for ~20 seconds
+    
+    # Checkpointing
+    checkpoint_interval = 500               # Save checkpoint every 500 steps
+    checkpoint_folder = "./checkpoints/production_test_fug"
+
+# ============================================================================
+# Physics Parameters (from original Jericho)
+# ============================================================================
+
+[physics]
+    # Grad-B drift validation
+    # With B=100 nT, protons, v=1 km/s, f=0.5: dB/dx = 1.524e-8 T/m
+    # This test uses uniform B, so no grad-B drift expected
+    
+    # Gyroradius (for reference)
+    # r_g = mv/(qB) ≈ 100 m for these parameters
+    
+    # Gyroperiod (for reference)
+    # P_g = 2πm/(qB) ≈ 630 μs for these parameters
+    
+    # Current note: These are included for reference when upgrading to more
+    # realistic physics models. Current implementation uses simplified parameters.
+    
+    coriolis_enabled = false                # Not applicable in 2D Cartesian
+    self_consistent_fields = true           # Use Phase 11 solver
+    
+    pusher_type = "boris"                   # Boris pusher (optimized)
+    pusher_variant = "corrected"            # Corrected Boris for better accuracy
+
+# ============================================================================
+# Debugging and Diagnostics
+# ============================================================================
+
+[debug]
+    # Console output
+    verbose = true
+    print_every_n_steps = 50
+    
+    # Field diagnostics
+    print_field_diagnostics = true
+    print_particle_diagnostics = true
+    print_energy_diagnostics = true
+    
+    # Error checking
+    nan_check_enabled = true                # Check for NaN values each step
+    infinity_check_enabled = true           # Check for Inf values each step
+    bounds_check_enabled = true             # Verify field/particle bounds
+    
+    # Detailed logging
+    detailed_logging = false                # Very verbose - only for debugging
+    log_file = "./outputs/production_test_fug/jericho_mkII.log"

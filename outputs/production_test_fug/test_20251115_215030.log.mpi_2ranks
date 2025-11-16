@@ -1,0 +1,42 @@
+
+========================================
+  Jericho Mk II - MPI Hybrid PIC
+  OPTIMIZED: Non-blocking exchange + batched diagnostics
+  Running on 2 MPI ranks
+========================================
+
+MPI Topology: 1 x 2 (2 ranks total)
+Configuration:
+  Local grid: 256 x 128 per rank
+  Particles per rank: 500
+  Total particles: 2000
+  Diagnostics batched every 10 steps (10x reduction in AllReduce)
+  Ghost cell exchange: non-blocking (MPI_Isend/Irecv)
+
+========================================
+
+Step 0/100
+  Step 0: EM Energy = -nan J, Conservation Error = 1.000000e-06
+  [Diagnostics at step 9] E_global=2.000000e+00 N_global=2000
+  [Diagnostics at step 19] E_global=2.000000e+00 N_global=2000
+Step 20/100
+  [Diagnostics at step 29] E_global=2.000000e+00 N_global=2000
+  [Diagnostics at step 39] E_global=2.000000e+00 N_global=2000
+Step 40/100
+  [Diagnostics at step 49] E_global=2.000000e+00 N_global=2000
+  [Diagnostics at step 59] E_global=2.000000e+00 N_global=2000
+Step 60/100
+  [Diagnostics at step 69] E_global=2.000000e+00 N_global=2000
+  [Diagnostics at step 79] E_global=2.000000e+00 N_global=2000
+Step 80/100
+  [Diagnostics at step 89] E_global=2.000000e+00 N_global=2000
+  [Diagnostics at step 99] E_global=2.000000e+00 N_global=2000
+
+========================================
+Simulation complete!
+========================================
+Total steps: 100
+Loop time: 1.837928e+00 s
+Time per step: 1.837928e+01 ms
+Performance: 1.088182e-01 million particle pushes/sec
+

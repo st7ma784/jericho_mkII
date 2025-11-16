@@ -1,0 +1,104 @@
+# Jericho Mk II Configuration File
+# Example: Magnetic reconnection simulation
+
+[simulation]
+name = "magnetic_reconnection"
+output_dir = "./output"
+checkpoint_dir = "./checkpoints"
+
+# Timestep and duration
+dt = 0.01              # Timestep [ion gyroperiods]
+n_steps = 10000        # Number of timesteps
+output_cadence = 100   # Write output every N steps
+
+[domain]
+# Spatial domain
+x_min = -10.0  # [ion inertial lengths]
+x_max =  10.0
+y_min = -10.0
+y_max =  10.0
+
+# Grid resolution
+nx = 256
+ny = 256
+
+[mpi]
+# MPI decomposition
+npx = 2  # Processes in x direction
+npy = 2  # Processes in y direction
+# Total MPI ranks = npx * npy = 4
+
+[cuda]
+# GPU settings
+threads_per_block = 256
+use_cuda_aware_mpi = true
+device_id = 0  # Set to -1 for auto-assignment
+
+[particles]
+# Particle configuration
+particles_per_cell = 100
+
+# Species 0: Electrons (handled as fluid)
+# Species 1: H+ ions
+[[particles.species]]
+name = "H+"
+charge = 1.602e-19   # [C]
+mass = 1.673e-27     # [kg] (proton mass)
+temperature = 1.0e6  # [K]
+density = 1.0e6      # [particles/m^3]
+
+# Species 2: O+ ions
+[[particles.species]]
+name = "O+"
+charge = 1.602e-19
+mass = 2.656e-26     # [kg] (oxygen-16)
+temperature = 1.0e6
+density = 1.0e5
+
+[fields]
+# Initial magnetic field (Harris sheet configuration)
+B0 = 20.0e-9         # [T] Asymptotic field strength
+L_sheet = 1.0        # [ion inertial lengths] Current sheet thickness
+
+# Background electric field
+E0_x = 0.0           # [V/m]
+E0_y = 0.0
+
+[boundaries]
+# Boundary conditions for particles
+x_min = "periodic"     # Options: periodic, outflow, inflow, reflecting
+x_max = "periodic"
+y_min = "periodic"
+y_max = "periodic"
+
+# Inflow boundary parameters (if using inflow)
+[boundaries.inflow]
+enabled = false
+rate = 1000          # Particles injected per timestep per boundary
+velocity_mean = [0.0, 0.0]
+velocity_thermal = 1.0e5  # [m/s]
+
+[physics]
+# Physics model options
+boris_pusher = true
+cam_method = true        # Current Advance Method
+ohms_law_hall = true     # Include Hall term in Ohm's law
+electron_pressure = false # Pressure gradient term (experimental)
+
+[output]
+# Output configuration
+fields = ["Ex", "Ey", "Bz", "density", "current_x", "current_y"]
+particles = true
+particle_cadence = 100   # Output particles every N steps
+checkpoint_cadence = 500 # Checkpoint every N steps
+
+# File formats
+field_format = "hdf5"    # Options: hdf5, netcdf, binary
+particle_format = "hdf5"
+
+[diagnostics]
+# Runtime diagnostics
+compute_energy = true
+compute_momentum = true
+check_nans = true
+verbose = true

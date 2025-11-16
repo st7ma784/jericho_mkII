@@ -1,0 +1,528 @@
+/**
+ * @file fields.cu
+ * @brief CUDA kernels for electromagnetic field updates
+ * @author Jericho Mk II Development Team
+ *
+ * This file implements GPU kernels for advancing electromagnetic fields:
+ * - Faraday's law (magnetic field advance)
+ * - Ohm's law with Hall term (electric field)
+ * - Current Advance Method (CAM) for stability
+ * - Finite difference operators (curl, gradient)
+ */
+
+#include "../include/field_arrays.h"
+#include "../include/platform.h"
+#include <cmath>
+#include <cstdlib>
+
+namespace jericho {
+namespace cuda {
+
+// =============================================================================
+// Device helper functions - Finite difference operators
+// =============================================================================
+
+/**
+ * @brief Central difference in x-direction
+ *
+ * @param field Input 2D field
+ * @param nx,ny Grid dimensions
+ * @param ix,iy Grid indices
+ * @param dx Grid spacing
+ * @return ∂field/∂x at (ix,iy)
+ */
+DEVICE_HOST inline double ddx_central(const double* field, int nx, int ny,
+                                     int ix, int iy, double dx) {
+    int idx = iy * nx + ix;
+    return (field[idx + 1] - field[idx - 1]) / (2.0 * dx);
+}
+
+/**
+ * @brief Central difference in y-direction
+ */
+DEVICE_HOST inline double ddy_central(const double* field, int nx, int ny,
+                                     int ix, int iy, double dy) {
+    int idx = iy * nx + ix;
+    return (field[idx + nx] - field[idx - nx]) / (2.0 * dy);
+}
+
+/**
+ * @brief Compute curl of vector field (z-component)
+ *
+ * For 2.5D: ∇×F = (∂Fy/∂x - ∂Fx/∂y) ẑ
+ */
+DEVICE_HOST inline double curl_z(const double* Fx, const double* Fy,
+                               int nx, int ny, int ix, int iy,
+                               double dx, double dy) {
+    return ddx_central(Fy, nx, ny, ix, iy, dx) -
+           ddy_central(Fx, nx, ny, ix, iy, dy);
+}
+
+// =============================================================================
+// Kernel: Advance magnetic field (Faraday's law)
+// =============================================================================
+
+/**
+ * @brief Advance magnetic field: ∂B/∂t = -∇×E
+ *
+ * @details Uses predictor-corrector (PC) method for stability:
+ * 1. Predictor: B* = B^n - dt * (∇×E^n)
+ * 2. Corrector: B^{n+1} = B^n - (dt/2) * (∇×E^n + ∇×E*)
+ *
+ * This kernel implements the corrector step.
+ *
+ * @param Bz_old Magnetic field at time n
+ * @param Bz_new Magnetic field at time n+1 (output)
+ * @param Ex,Ey Electric field components
+ * @param nx,ny Grid dimensions
+ * @param dx,dy Grid spacing
+ * @param dt Timestep
+ */
+GLOBAL void advance_magnetic_field_kernel(
+    const double*  Bz_old,
+    double*  Bz_new,
+    const double*  Ex,
+    const double*  Ey,
+    int nx, int ny,
+    double dx, double dy,
+    double dt)
+{
+    int ix = blockIdx.x * blockDim.x + threadIdx.x + 1;  // +1 for ghost cells
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    if (ix >= nx-1 || iy >= ny-1) return;  // Skip ghost cells
+
+    int idx = iy * nx + ix;
+
+    // Compute curl of E: ∇×E = (∂Ey/∂x - ∂Ex/∂y) ẑ
+    double curl_E_z = curl_z(Ex, Ey, nx, ny, ix, iy, dx, dy);
+
+    // Faraday's law: ∂Bz/∂t = -∇×E
+    Bz_new[idx] = Bz_old[idx] - dt * curl_E_z;
+}
+
+// =============================================================================
+// Kernel: Compute ion flow velocity from current and charge
+// =============================================================================
+
+/**
+ * @brief Compute ion flow velocity: U = J / q
+ *
+ * @param Jx,Jy Current density components
+ * @param charge_density Charge density
+ * @param Ux,Uy Ion flow velocity (output)
+ * @param nx,ny Grid dimensions
+ * @param q_min Minimum charge density (floor to prevent division by zero)
+ */
+GLOBAL void compute_flow_velocity_kernel(
+    const double*  Jx,
+    const double*  Jy,
+    const double*  charge_density,
+    double*  Ux,
+    double*  Uy,
+    int nx, int ny,
+    double q_min)
+{
+    int ix = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    if (ix >= nx-1 || iy >= ny-1) return;
+
+    int idx = iy * nx + ix;
+
+    // Apply charge density floor
+    double q = fmax(fabs(charge_density[idx]), q_min);
+
+    // U = J / q
+    Ux[idx] = Jx[idx] / q;
+    Uy[idx] = Jy[idx] / q;
+}
+
+// =============================================================================
+// Kernel: Electric field solver (Generalized Ohm's law)
+// =============================================================================
+
+/**
+ * @brief Solve for electric field using generalized Ohm's law
+ *
+ * @details Computes E from:
+ * E = -U×B - (∇×B)/(μ₀*q*n) - ∇p/(q*n)
+ *
+ * Where:
+ * - First term: Convective electric field (UxB)
+ * - Second term: Hall term
+ * - Third term: Pressure gradient (optional)
+ *
+ * For 2.5D geometry:
+ * Ex = -Uy*Bz - (∂Bz/∂x)/(μ₀*q*n)
+ * Ey =  Ux*Bz - (∂Bz/∂y)/(μ₀*q*n)
+ *
+ * @param Ux,Uy Ion flow velocity
+ * @param Bz Magnetic field
+ * @param charge_density Charge density
+ * @param Ex,Ey Electric field (output)
+ * @param nx,ny Grid dimensions
+ * @param dx,dy Grid spacing
+ * @param mu_0 Permeability of free space
+ * @param q_min Charge density floor
+ * @param use_hall Enable Hall term
+ */
+GLOBAL void solve_electric_field_kernel(
+    const double*  Ux,
+    const double*  Uy,
+    const double*  Bz,
+    const double*  charge_density,
+    double*  Ex,
+    double*  Ey,
+    int nx, int ny,
+    double dx, double dy,
+    double mu_0,
+    double q_min,
+    bool use_hall)
+{
+    int ix = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    if (ix >= nx-1 || iy >= ny-1) return;
+
+    int idx = iy * nx + ix;
+
+    double ux = Ux[idx];
+    double uy = Uy[idx];
+    double bz = Bz[idx];
+    double q = fmax(fabs(charge_density[idx]), q_min);
+
+    // Convective term: -U×B
+    double Ex_conv = -uy * bz;
+    double Ey_conv =  ux * bz;
+
+    // Hall term: -(∇×B)/(μ₀*q*n)
+    double Ex_hall = 0.0;
+    double Ey_hall = 0.0;
+
+    if (use_hall) {
+        // ∂Bz/∂x and ∂Bz/∂y
+        double dBz_dx = ddx_central(Bz, nx, ny, ix, iy, dx);
+        double dBz_dy = ddy_central(Bz, nx, ny, ix, iy, dy);
+
+        Ex_hall = -dBz_dx / (mu_0 * q);
+        Ey_hall = -dBz_dy / (mu_0 * q);
+    }
+
+    // Total electric field
+    Ex[idx] = Ex_conv + Ex_hall;
+    Ey[idx] = Ey_conv + Ey_hall;
+}
+
+// =============================================================================
+// Kernel: Current Advance Method (CAM) coefficients
+// =============================================================================
+
+/**
+ * @brief Compute CAM Lambda coefficient
+ *
+ * @details Lambda = Σ_p (q_p²/m_p) * S(x_p)
+ *
+ * Where S(x_p) is the particle shape function.
+ * This is computed during particle-to-grid operation.
+ * This kernel just ensures proper normalization.
+ *
+ * @param Lambda CAM Lambda coefficient (modified in place)
+ * @param charge_density Charge density
+ * @param nx,ny Grid dimensions
+ * @param epsilon Small value to prevent division by zero
+ */
+GLOBAL void normalize_cam_coefficients_kernel(
+    double*  Lambda,
+    double*  Gamma_x,
+    double*  Gamma_y,
+    const double*  charge_density,
+    int nx, int ny,
+    double epsilon)
+{
+    int ix = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    if (ix >= nx-1 || iy >= ny-1) return;
+
+    int idx = iy * nx + ix;
+
+    // Ensure Lambda is non-zero
+    if (Lambda[idx] < epsilon) {
+        Lambda[idx] = epsilon;
+    }
+
+    // Gamma coefficients already computed during P2G
+    // Just ensure they're finite
+    if (!std::isfinite(Gamma_x[idx])) Gamma_x[idx] = 0.0;
+    if (!std::isfinite(Gamma_y[idx])) Gamma_y[idx] = 0.0;
+}
+
+/**
+ * @brief Apply CAM correction to electric field
+ *
+ * @details Computes mixed electric field:
+ * E_mix = E_n+1 + (dt/2) * (Lambda * E_mix + Gamma × B_n+1)
+ *
+ * Rearranged:
+ * E_mix = [E_n+1 + (dt/2) * Gamma × B] / [1 - (dt/2) * Lambda]
+ *
+ * @param Ex_new,Ey_new Electric field at n+1 (uncorrected)
+ * @param Ex_mix,Ey_mix Mixed electric field (output)
+ * @param Bz Magnetic field at n+1
+ * @param Lambda,Gamma_x,Gamma_y CAM coefficients
+ * @param nx,ny Grid dimensions
+ * @param dt Timestep
+ */
+GLOBAL void apply_cam_correction_kernel(
+    const double*  Ex_new,
+    const double*  Ey_new,
+    double*  Ex_mix,
+    double*  Ey_mix,
+    const double*  Bz,
+    const double*  Lambda,
+    const double*  Gamma_x,
+    const double*  Gamma_y,
+    int nx, int ny,
+    double dt)
+{
+    int ix = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    if (ix >= nx-1 || iy >= ny-1) return;
+
+    int idx = iy * nx + ix;
+
+    double lambda = Lambda[idx];
+    double gamma_x = Gamma_x[idx];
+    double gamma_y = Gamma_y[idx];
+    double bz = Bz[idx];
+
+    double half_dt = 0.5 * dt;
+
+    // Gamma × B term (for 2.5D: Γ × B = (Γy*Bz, -Γx*Bz, 0))
+    double gamma_cross_B_x =  gamma_y * bz;
+    double gamma_cross_B_y = -gamma_x * bz;
+
+    // CAM mixing
+    double denom = 1.0 - half_dt * lambda;
+    denom = (denom > 0.1) ? denom : 1.0;  // Prevent division by small numbers
+
+    Ex_mix[idx] = (Ex_new[idx] + half_dt * gamma_cross_B_x) / denom;
+    Ey_mix[idx] = (Ey_new[idx] + half_dt * gamma_cross_B_y) / denom;
+}
+
+// =============================================================================
+// Kernel: Clamp electric field to background level
+// =============================================================================
+
+/**
+ * @brief Clamp electric field to background in vacuum regions
+ *
+ * @details In regions with very low charge density, set E = E_background
+ * to prevent numerical issues.
+ *
+ * @param Ex,Ey Electric field (modified in place)
+ * @param Ex_back,Ey_back Background electric field
+ * @param charge_density Charge density
+ * @param nx,ny Grid dimensions
+ * @param q_threshold Charge density threshold for clamping
+ */
+GLOBAL void clamp_electric_field_kernel(
+    double*  Ex,
+    double*  Ey,
+    const double*  Ex_back,
+    const double*  Ey_back,
+    const double*  charge_density,
+    int nx, int ny,
+    double q_threshold)
+{
+    int ix = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    if (ix >= nx-1 || iy >= ny-1) return;
+
+    int idx = iy * nx + ix;
+
+    // If charge density is very low, use background field
+    if (fabs(charge_density[idx]) < q_threshold) {
+        Ex[idx] = Ex_back[idx];
+        Ey[idx] = Ey_back[idx];
+    } else {
+        // Ensure field doesn't go below background level
+        Ex[idx] = fmax(Ex[idx], Ex_back[idx]);
+        Ey[idx] = fmax(Ey[idx], Ey_back[idx]);
+    }
+}
+
+// =============================================================================
+// Host wrapper functions
+// =============================================================================
+
+/**
+ * @brief Advance magnetic field by dt
+ */
+void advance_magnetic_field(FieldArrays& fields, double dt) {
+    dim3 block(16, 16);
+    dim3 grid((fields.nx + block.x - 1) / block.x,
+              (fields.ny + block.y - 1) / block.y);
+
+#ifdef USE_CPU
+    KERNEL_LAUNCH(advance_magnetic_field_kernel, grid, block,
+        fields.Bz, fields.Bz,  // In-place update
+        fields.Ex, fields.Ey,
+        fields.nx, fields.ny,
+        fields.dx, fields.dy, dt);
+#else
+    advance_magnetic_field_kernel<<<grid, block>>>(
+        fields.Bz, fields.Bz,  // In-place update
+        fields.Ex, fields.Ey,
+        fields.nx, fields.ny,
+        fields.dx, fields.dy, dt
+    );
+    PLATFORM_CHECK(cudaGetLastError());
+#endif
+}
+
+/**
+ * @brief Compute ion flow velocity from current and charge
+ */
+void compute_flow_velocity(FieldArrays& fields) {
+    const double q_min = 1.0e-15 * constants::e;  // Charge floor
+
+    dim3 block(16, 16);
+    dim3 grid((fields.nx + block.x - 1) / block.x,
+              (fields.ny + block.y - 1) / block.y);
+
+#ifdef USE_CPU
+    KERNEL_LAUNCH(compute_flow_velocity_kernel, grid, block,
+        fields.Jx, fields.Jy,
+        fields.charge_density,
+        fields.Ux, fields.Uy,
+        fields.nx, fields.ny, q_min);
+#else
+    compute_flow_velocity_kernel<<<grid, block>>>(
+        fields.Jx, fields.Jy,
+        fields.charge_density,
+        fields.Ux, fields.Uy,
+        fields.nx, fields.ny, q_min
+    );
+    PLATFORM_CHECK(cudaGetLastError());
+#endif
+}
+
+/**
+ * @brief Solve electric field using Ohm's law
+ */
+void solve_electric_field(FieldArrays& fields, bool use_hall = true) {
+    const double q_min = 1.0e-15 * constants::e;
+
+    dim3 block(16, 16);
+    dim3 grid((fields.nx + block.x - 1) / block.x,
+              (fields.ny + block.y - 1) / block.y);
+
+#ifdef USE_CPU
+    KERNEL_LAUNCH(solve_electric_field_kernel, grid, block,
+        fields.Ux, fields.Uy, fields.Bz,
+        fields.charge_density,
+        fields.Ex, fields.Ey,
+        fields.nx, fields.ny,
+        fields.dx, fields.dy,
+        constants::mu_0, q_min, use_hall);
+#else
+    solve_electric_field_kernel<<<grid, block>>>(
+        fields.Ux, fields.Uy, fields.Bz,
+        fields.charge_density,
+        fields.Ex, fields.Ey,
+        fields.nx, fields.ny,
+        fields.dx, fields.dy,
+        constants::mu_0, q_min, use_hall
+    );
+    PLATFORM_CHECK(cudaGetLastError());
+#endif
+}
+
+/**
+ * @brief Apply CAM correction
+ */
+void apply_cam_correction(FieldArrays& fields, double dt) {
+    dim3 block(16, 16);
+    dim3 grid((fields.nx + block.x - 1) / block.x,
+              (fields.ny + block.y - 1) / block.y);
+
+    // First normalize CAM coefficients
+    const double epsilon = 1.0e-20;
+#ifdef USE_CPU
+    KERNEL_LAUNCH(normalize_cam_coefficients_kernel, grid, block,
+        fields.Lambda, fields.Gamma_x, fields.Gamma_y,
+        fields.charge_density,
+        fields.nx, fields.ny, epsilon);
+#else
+    normalize_cam_coefficients_kernel<<<grid, block>>>(
+        fields.Lambda, fields.Gamma_x, fields.Gamma_y,
+        fields.charge_density,
+        fields.nx, fields.ny, epsilon
+    );
+    PLATFORM_CHECK(cudaGetLastError());
+#endif
+
+    // Then apply correction
+#ifdef USE_CPU
+    KERNEL_LAUNCH(apply_cam_correction_kernel, grid, block,
+        fields.Ex, fields.Ey,
+        fields.tmp1, fields.tmp2,  // Use tmp arrays for mixed E
+        fields.Bz,
+        fields.Lambda, fields.Gamma_x, fields.Gamma_y,
+        fields.nx, fields.ny, dt);
+#else
+    apply_cam_correction_kernel<<<grid, block>>>(
+        fields.Ex, fields.Ey,
+        fields.tmp1, fields.tmp2,  // Use tmp arrays for mixed E
+        fields.Bz,
+        fields.Lambda, fields.Gamma_x, fields.Gamma_y,
+        fields.nx, fields.ny, dt
+    );
+    PLATFORM_CHECK(cudaGetLastError());
+#endif
+
+    // Copy mixed E back to main arrays
+    size_t bytes = fields.get_total_points() * sizeof(double);
+    cudaMemcpy(fields.Ex, fields.tmp1, bytes, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(fields.Ey, fields.tmp2, bytes, cudaMemcpyDeviceToDevice);
+
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA error in apply_cam_correction: %s\n",
+                cudaGetErrorString(err));
+    }
+}
+
+/**
+ * @brief Clamp electric field to background
+ */
+void clamp_electric_field(FieldArrays& fields) {
+    const double q_threshold = 1.0e-14 * constants::e;
+
+    dim3 block(16, 16);
+    dim3 grid((fields.nx + block.x - 1) / block.x,
+              (fields.ny + block.y - 1) / block.y);
+
+#ifdef USE_CPU
+    KERNEL_LAUNCH(clamp_electric_field_kernel, grid, block,
+        fields.Ex, fields.Ey,
+        fields.Ex_back, fields.Ey_back,
+        fields.charge_density,
+        fields.nx, fields.ny, q_threshold);
+#else
+    clamp_electric_field_kernel<<<grid, block>>>(
+        fields.Ex, fields.Ey,
+        fields.Ex_back, fields.Ey_back,
+        fields.charge_density,
+        fields.nx, fields.ny, q_threshold
+    );
+    PLATFORM_CHECK(cudaGetLastError());
+#endif
+}
+
+} // namespace cuda
+} // namespace jericho

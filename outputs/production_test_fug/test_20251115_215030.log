@@ -1,0 +1,10 @@
+
+========================================
+  Jericho Mk II - Hybrid PIC-MHD Code
+  CPU Build (Testing SoA architecture)
+========================================
+MPI ranks: 1
+Mode: CPU (no CUDA)
+
+ERROR: Configuration file required
+Usage: /home/user/Documents/jericho/jericho_mkII/build/jericho_mkII <config.toml> [max_steps]

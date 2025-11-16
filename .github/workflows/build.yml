@@ -1,0 +1,49 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-cuda:
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:11.8.0-devel-ubuntu22.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y cmake g++ libopenmpi-dev
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_CUDA_ARCHITECTURES=80 \
+              -DBUILD_TESTS=ON ..
+
+    - name: Build
+      run: |
+        cd build
+        make -j$(nproc)
+
+    - name: Run tests
+      run: |
+        cd build
+        ctest --output-on-failure
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run clang-format check
+      run: |
+        find src include cuda -name '*.cpp' -o -name '*.h' -o -name '*.cu' | \
+        xargs clang-format --dry-run --Werror
