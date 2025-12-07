@@ -39,9 +39,9 @@ struct BorisConfig {
 
     // Rotating frame physics (NEW)
     bool enable_rotating_frame = false; ///< Enable rotating frame
-    double Omega = 0.0;                  ///< Angular velocity [rad/s]
-    bool enable_coriolis = true;         ///< Enable Coriolis force
-    bool enable_centrifugal = true;      ///< Enable centrifugal force
+    double Omega = 0.0;                 ///< Angular velocity [rad/s]
+    bool enable_coriolis = true;        ///< Enable Coriolis force
+    bool enable_centrifugal = true;     ///< Enable centrifugal force
 };
 
 /**

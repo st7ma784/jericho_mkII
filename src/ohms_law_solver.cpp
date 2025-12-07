@@ -18,13 +18,8 @@ namespace jericho {
 // Flow Velocity Computation
 // ============================================================================
 
-void compute_flow_velocity(
-    const double* Jx, const double* Jy,
-    const double* charge_density,
-    double* Ux, double* Uy,
-    int nx, int ny,
-    const OhmsLawConfig& config
-) {
+void compute_flow_velocity(const double* Jx, const double* Jy, const double* charge_density,
+                           double* Ux, double* Uy, int nx, int ny, const OhmsLawConfig& config) {
     // U = J/q with charge density floor to prevent division by zero
     for (int iy = 1; iy < ny - 1; ++iy) {
         for (int ix = 1; ix < nx - 1; ++ix) {
@@ -45,12 +40,8 @@ void compute_flow_velocity(
 // Charge Density Smoothing
 // ============================================================================
 
-void smooth_charge_density(
-    const double* q_in,
-    double* q_out,
-    int nx, int ny,
-    double smoothing_factor
-) {
+void smooth_charge_density(const double* q_in, double* q_out, int nx, int ny,
+                           double smoothing_factor) {
     // Apply 4-point stencil smoothing
     // q_smooth = (1-α)·q + α·avg(neighbors)
     const double alpha = smoothing_factor;
@@ -81,14 +72,9 @@ void smooth_charge_density(
 // Hall Term Computation
 // ============================================================================
 
-void compute_hall_term(
-    const double* Bz,
-    const double* charge_density,
-    double* Ex_hall, double* Ey_hall,
-    int nx, int ny,
-    double dx, double dy,
-    const OhmsLawConfig& config
-) {
+void compute_hall_term(const double* Bz, const double* charge_density, double* Ex_hall,
+                       double* Ey_hall, int nx, int ny, double dx, double dy,
+                       const OhmsLawConfig& config) {
     // Hall term: -∇×B/(μ₀·q)
     // For 2D with Bz: E_hall = -∇Bz/(μ₀·q)
 
@@ -123,11 +109,7 @@ void compute_hall_term(
 // Hall Term Boundary Tapering
 // ============================================================================
 
-void apply_hall_term_tapering(
-    double* Ex_hall, double* Ey_hall,
-    int nx, int ny,
-    int taper_width
-) {
+void apply_hall_term_tapering(double* Ex_hall, double* Ey_hall, int nx, int ny, int taper_width) {
     // Linear taper from 0 (boundary) to 1 (interior)
     // Taper function: f(d) = min(d / width, 1.0)
     // where d is distance from nearest boundary
@@ -146,9 +128,9 @@ void apply_hall_term_tapering(
             int min_dist = std::min({dist_xmin, dist_xmax, dist_ymin, dist_ymax});
 
             // Taper factor: 0 at boundary, 1 at interior
-            double taper_factor = (min_dist < taper_width)
-                ? static_cast<double>(min_dist) / static_cast<double>(taper_width)
-                : 1.0;
+            double taper_factor = (min_dist < taper_width) ? static_cast<double>(min_dist) /
+                                                                 static_cast<double>(taper_width)
+                                                           : 1.0;
 
             // Apply tapering
             Ex_hall[idx] *= taper_factor;
@@ -161,15 +143,9 @@ void apply_hall_term_tapering(
 // Main Ohm's Law Solver
 // ============================================================================
 
-void solve_electric_field_ohms_law(
-    const double* Ux, const double* Uy,
-    const double* Bz,
-    const double* charge_density,
-    double* Ex, double* Ey,
-    int nx, int ny,
-    double dx, double dy,
-    const OhmsLawConfig& config
-) {
+void solve_electric_field_ohms_law(const double* Ux, const double* Uy, const double* Bz,
+                                   const double* charge_density, double* Ex, double* Ey, int nx,
+                                   int ny, double dx, double dy, const OhmsLawConfig& config) {
     // Step 1: Compute convective term: E = -U×B
     for (int iy = 1; iy < ny - 1; ++iy) {
         for (int ix = 1; ix < nx - 1; ++ix) {
@@ -180,7 +156,7 @@ void solve_electric_field_ohms_law(
             // Ex = -Uy·Bz
             // Ey =  Ux·Bz
             Ex[idx] = -Uy[idx] * Bz[idx];
-            Ey[idx] =  Ux[idx] * Bz[idx];
+            Ey[idx] = Ux[idx] * Bz[idx];
         }
     }
 
@@ -190,13 +166,12 @@ void solve_electric_field_ohms_law(
         std::vector<double> Ey_hall(nx * ny, 0.0);
 
         // Compute Hall term
-        compute_hall_term(Bz, charge_density, Ex_hall.data(), Ey_hall.data(),
-                          nx, ny, dx, dy, config);
+        compute_hall_term(Bz, charge_density, Ex_hall.data(), Ey_hall.data(), nx, ny, dx, dy,
+                          config);
 
         // Apply tapering near boundaries if enabled
         if (config.use_tapering) {
-            apply_hall_term_tapering(Ex_hall.data(), Ey_hall.data(), nx, ny,
-                                     config.taper_width);
+            apply_hall_term_tapering(Ex_hall.data(), Ey_hall.data(), nx, ny, config.taper_width);
         }
 
         // Add to electric field (SUBTRACTIVE - see compute_hall_term for sign)
@@ -211,15 +186,9 @@ void solve_electric_field_ohms_law(
 // Full Pipeline Solver
 // ============================================================================
 
-void solve_ohms_law_full(
-    const double* Jx, const double* Jy,
-    const double* Bz,
-    const double* charge_density,
-    double* Ex, double* Ey,
-    int nx, int ny,
-    double dx, double dy,
-    const OhmsLawConfig& config
-) {
+void solve_ohms_law_full(const double* Jx, const double* Jy, const double* Bz,
+                         const double* charge_density, double* Ex, double* Ey, int nx, int ny,
+                         double dx, double dy, const OhmsLawConfig& config) {
     // Allocate temporary arrays
     std::vector<double> Ux(nx * ny);
     std::vector<double> Uy(nx * ny);
@@ -238,20 +207,16 @@ void solve_ohms_law_full(
     compute_flow_velocity(Jx, Jy, q_to_use, Ux.data(), Uy.data(), nx, ny, config);
 
     // Step 2: Solve E-field using Ohm's law
-    solve_electric_field_ohms_law(Ux.data(), Uy.data(), Bz, q_to_use,
-                                    Ex, Ey, nx, ny, dx, dy, config);
+    solve_electric_field_ohms_law(Ux.data(), Uy.data(), Bz, q_to_use, Ex, Ey, nx, ny, dx, dy,
+                                  config);
 }
 
 // ============================================================================
 // Diagnostics
 // ============================================================================
 
-double compute_hall_parameter(
-    const double* charge_density,
-    const double* Bz,
-    double dx,
-    int nx, int ny
-) {
+double compute_hall_parameter(const double* charge_density, const double* Bz, double dx, int nx,
+                              int ny) {
     // Hall parameter: β = d_i / L
     // where d_i = c/ω_pi is ion inertial length
     // ω_pi = sqrt(n e² / (ε₀ m_i))
@@ -272,7 +237,8 @@ double compute_hall_parameter(
 
             // Number density from charge density
             double q = std::fabs(charge_density[idx]);
-            if (q < 1.0e-20) continue; // Skip empty cells
+            if (q < 1.0e-20)
+                continue; // Skip empty cells
 
             double n = q / e; // Number density [1/m³]
 

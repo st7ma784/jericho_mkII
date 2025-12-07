@@ -40,14 +40,14 @@ namespace jericho {
  * @brief Configuration for Ohm's Law solver
  */
 struct OhmsLawConfig {
-    bool use_hall_term = true;     ///< Include Hall term (ion-scale physics)
-    double q_min = 1.0e-15;         ///< Charge density floor [C/m³]
-    bool use_smoothing = false;     ///< Apply charge density smoothing
-    bool use_tapering = false;      ///< Taper Hall term near boundaries
-    int taper_width = 5;            ///< Boundary taper width [cells]
+    bool use_hall_term = true;  ///< Include Hall term (ion-scale physics)
+    double q_min = 1.0e-15;     ///< Charge density floor [C/m³]
+    bool use_smoothing = false; ///< Apply charge density smoothing
+    bool use_tapering = false;  ///< Taper Hall term near boundaries
+    int taper_width = 5;        ///< Boundary taper width [cells]
 
     // Physical constants (can override for normalized units)
-    double mu_0 = 1.25663706e-6;    ///< Permeability of free space [H/m]
+    double mu_0 = 1.25663706e-6;      ///< Permeability of free space [H/m]
     double epsilon_0 = 8.8541878e-12; ///< Permittivity of free space [F/m]
 };
 
@@ -63,13 +63,8 @@ struct OhmsLawConfig {
  * @param[in] nx, ny Grid dimensions
  * @param[in] config Solver configuration (for q_min)
  */
-void compute_flow_velocity(
-    const double* Jx, const double* Jy,
-    const double* charge_density,
-    double* Ux, double* Uy,
-    int nx, int ny,
-    const OhmsLawConfig& config
-);
+void compute_flow_velocity(const double* Jx, const double* Jy, const double* charge_density,
+                           double* Ux, double* Uy, int nx, int ny, const OhmsLawConfig& config);
 
 /**
  * @brief Solve electric field using generalized Ohm's law
@@ -91,15 +86,9 @@ void compute_flow_velocity(
  * @param[in] dx, dy Grid spacing [m]
  * @param[in] config Solver configuration
  */
-void solve_electric_field_ohms_law(
-    const double* Ux, const double* Uy,
-    const double* Bz,
-    const double* charge_density,
-    double* Ex, double* Ey,
-    int nx, int ny,
-    double dx, double dy,
-    const OhmsLawConfig& config
-);
+void solve_electric_field_ohms_law(const double* Ux, const double* Uy, const double* Bz,
+                                   const double* charge_density, double* Ex, double* Ey, int nx,
+                                   int ny, double dx, double dy, const OhmsLawConfig& config);
 
 /**
  * @brief Apply charge density smoothing (optional)
@@ -115,12 +104,8 @@ void solve_electric_field_ohms_law(
  * @param[in] nx, ny Grid dimensions
  * @param[in] smoothing_factor Blend factor α ∈ [0,1]
  */
-void smooth_charge_density(
-    const double* q_in,
-    double* q_out,
-    int nx, int ny,
-    double smoothing_factor = 0.5
-);
+void smooth_charge_density(const double* q_in, double* q_out, int nx, int ny,
+                           double smoothing_factor = 0.5);
 
 /**
  * @brief Compute Hall term: -∇×B/(μ₀·q)
@@ -139,14 +124,9 @@ void smooth_charge_density(
  * @param[in] dx, dy Grid spacing [m]
  * @param[in] config Solver configuration
  */
-void compute_hall_term(
-    const double* Bz,
-    const double* charge_density,
-    double* Ex_hall, double* Ey_hall,
-    int nx, int ny,
-    double dx, double dy,
-    const OhmsLawConfig& config
-);
+void compute_hall_term(const double* Bz, const double* charge_density, double* Ex_hall,
+                       double* Ey_hall, int nx, int ny, double dx, double dy,
+                       const OhmsLawConfig& config);
 
 /**
  * @brief Apply boundary tapering to Hall term
@@ -164,11 +144,7 @@ void compute_hall_term(
  * @param[in] nx, ny Grid dimensions
  * @param[in] taper_width Width of taper zone [cells]
  */
-void apply_hall_term_tapering(
-    double* Ex_hall, double* Ey_hall,
-    int nx, int ny,
-    int taper_width
-);
+void apply_hall_term_tapering(double* Ex_hall, double* Ey_hall, int nx, int ny, int taper_width);
 
 /**
  * @brief Full Ohm's Law solver pipeline
@@ -189,15 +165,9 @@ void apply_hall_term_tapering(
  * @param[in] dx, dy Grid spacing [m]
  * @param[in] config Solver configuration
  */
-void solve_ohms_law_full(
-    const double* Jx, const double* Jy,
-    const double* Bz,
-    const double* charge_density,
-    double* Ex, double* Ey,
-    int nx, int ny,
-    double dx, double dy,
-    const OhmsLawConfig& config
-);
+void solve_ohms_law_full(const double* Jx, const double* Jy, const double* Bz,
+                         const double* charge_density, double* Ex, double* Ey, int nx, int ny,
+                         double dx, double dy, const OhmsLawConfig& config);
 
 /**
  * @brief Diagnostics: Compute Hall parameter β_Hall = d_i / L
@@ -215,11 +185,7 @@ void solve_ohms_law_full(
  * @param[in] nx, ny Grid dimensions
  * @return Average Hall parameter
  */
-double compute_hall_parameter(
-    const double* charge_density,
-    const double* Bz,
-    double dx,
-    int nx, int ny
-);
+double compute_hall_parameter(const double* charge_density, const double* Bz, double dx, int nx,
+                              int ny);
 
 } // namespace jericho
