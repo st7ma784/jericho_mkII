@@ -1,0 +1,1039 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Citation and Contributing &mdash; Jericho Mk II 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Troubleshooting" href="troubleshooting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Jericho Mk II
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#prerequisites">Prerequisites</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#hardware-requirements">Hardware Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#software-requirements">Software Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#step-1-install-cuda-toolkit">Step 1: Install CUDA Toolkit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#step-2-install-mpi-for-multi-gpu">Step 2: Install MPI (for Multi-GPU)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#step-3-clone-and-build-jericho-mk-ii">Step 3: Clone and Build Jericho Mk II</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-your-first-simulation">Running Your First Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#single-gpu-example">Single GPU Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#multi-gpu-example">Multi-GPU Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#understanding-the-configuration-file">Understanding the Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#visualizing-results">Visualizing Results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#basic-visualization-with-python">Basic Visualization with Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#quick-reference-common-commands">Quick Reference: Common Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#gpu-not-detected">GPU Not Detected</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#mpi-errors">MPI Errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#out-of-memory">Out of Memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#performance-issues">Performance Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#configuration-file-structure">Configuration File Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#simulation-section">Simulation Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#domain-section">Domain Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#mpi-section">MPI Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#cuda-section">CUDA Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#particles-section">Particles Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#fields-section">Fields Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#boundaries-section">Boundaries Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#physics-section">Physics Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#output-section">Output Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#diagnostics-section">Diagnostics Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#validation-and-testing">Validation and Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="running_simulations.html">Running Simulations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#single-gpu-simulation">Single GPU Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#command-line-options">Command Line Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#multi-gpu-simulations">Multi-GPU Simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#mpi-basics">MPI Basics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#gpu-assignment">GPU Assignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#multi-node-simulations">Multi-Node Simulations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#output-files">Output Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#file-structure">File Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#field-output-files">Field Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#particle-output-files">Particle Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#diagnostics-csv">Diagnostics CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#checkpoints">Checkpoints</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#visualization">Visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#quick-plots-with-python">Quick Plots with Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#paraview-visualization">ParaView Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#monitoring-and-diagnostics">Monitoring and Diagnostics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#real-time-monitoring">Real-Time Monitoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#check-energy-conservation">Check Energy Conservation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#performance-monitoring">Performance Monitoring</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#common-simulation-scenarios">Common Simulation Scenarios</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#magnetic-reconnection">Magnetic Reconnection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#kelvin-helmholtz-instability">Kelvin-Helmholtz Instability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#solar-wind-interaction">Solar Wind Interaction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#simulation-crashes">Simulation Crashes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_simulations.html#unexpected-results">Unexpected Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running_simulations.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="output_formats.html">Output Formats</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#field-output-files">Field Output Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#file-naming-convention">File Naming Convention</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#hdf5-structure">HDF5 Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#field-datasets">Field Datasets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#reading-field-files-in-python">Reading Field Files in Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#particle-output-files">Particle Output Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#id1">File Naming Convention</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#id2">HDF5 Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#particle-datasets">Particle Datasets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#reading-particle-files-in-python">Reading Particle Files in Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#diagnostics-csv-file">Diagnostics CSV File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#file-structure">File Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#columns">Columns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#reading-diagnostics-in-python">Reading Diagnostics in Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#checkpoint-files">Checkpoint Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#id3">File Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#restarting-from-checkpoint">Restarting from Checkpoint</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#data-analysis-examples">Data Analysis Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#compute-derived-quantities">Compute Derived Quantities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#time-series-analysis">Time Series Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#spatial-analysis">Spatial Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#exporting-to-other-formats">Exporting to Other Formats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#convert-to-vtk-paraview">Convert to VTK (ParaView)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_formats.html#convert-to-netcdf">Convert to NetCDF</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output_formats.html#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture and Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#hybrid-pic-mhd-physics">Hybrid PIC-MHD Physics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#governing-equations">Governing Equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#why-hybrid">Why Hybrid?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#numerical-methods">Numerical Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#particle-in-cell-algorithm">Particle-in-Cell Algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#boris-particle-pusher">Boris Particle Pusher</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#current-advance-method-cam">Current Advance Method (CAM)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#gpu-architecture">GPU Architecture</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#structure-of-arrays-soa">Structure of Arrays (SoA)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#cuda-kernel-design">CUDA Kernel Design</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#mpi-cuda-hybrid-parallelism">MPI+CUDA Hybrid Parallelism</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#domain-decomposition">Domain Decomposition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#ghost-cell-exchange">Ghost Cell Exchange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#particle-migration">Particle Migration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#memory-management">Memory Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#gpu-memory-hierarchy">GPU Memory Hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#memory-allocation-strategy">Memory Allocation Strategy</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#code-organization">Code Organization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#module-structure">Module Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#build-system">Build System</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#testing-strategy">Testing Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#unit-tests">Unit Tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#integration-tests">Integration Tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#performance-benchmarks">Performance Benchmarks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#key-performance-metrics">Key Performance Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cuda_kernels.html">CUDA Kernels</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#kernel-design-principles">Kernel Design Principles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#particle-kernels">Particle Kernels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#particle-push-kernel">Particle Push Kernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#bilinear-interpolation">Bilinear Interpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#boris-rotation">Boris Rotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#particle-to-grid-kernels">Particle-to-Grid Kernels</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#field-solver-kernels">Field Solver Kernels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#ohm-s-law-kernel">Ohm’s Law Kernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#faraday-s-law-kernel">Faraday’s Law Kernel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#boundary-condition-kernels">Boundary Condition Kernels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#periodic-boundaries">Periodic Boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#reflecting-boundaries">Reflecting Boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#outflow-boundaries">Outflow Boundaries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#diagnostic-kernels">Diagnostic Kernels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#kinetic-energy-kernel">Kinetic Energy Kernel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#memory-access-patterns">Memory Access Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#shared-memory-usage">Shared Memory Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#occupancy-tuning">Occupancy Tuning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#kernel-fusion">Kernel Fusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#profiling-and-debugging">Profiling and Debugging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#using-nvprof">Using nvprof</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#using-nsight-compute">Using Nsight Compute</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cuda_kernels.html#cuda-memcheck">CUDA-MEMCHECK</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_kernels.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mpi_parallelism.html">MPI Parallelism</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#why-mpi">Why MPI?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#domain-decomposition">Domain Decomposition</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#cartesian-grid-partitioning">Cartesian Grid Partitioning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#neighbor-identification">Neighbor Identification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#ghost-cells">Ghost Cells</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#communication-patterns">Communication Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#ghost-cell-exchange">Ghost Cell Exchange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#cuda-aware-mpi">CUDA-Aware MPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#particle-migration">Particle Migration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#collective-operations">Collective Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#load-balancing">Load Balancing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#static-load-balancing">Static Load Balancing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#dynamic-load-balancing-experimental">Dynamic Load Balancing (Experimental)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#overlap-communication-and-computation">Overlap Communication and Computation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#cuda-aware-mpi-with-gpudirect-rdma">CUDA-Aware MPI with GPUDirect RDMA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#minimize-ghost-cell-width">Minimize Ghost Cell Width</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#scaling-studies">Scaling Studies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#weak-scaling">Weak Scaling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#strong-scaling">Strong Scaling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#scaling-limits">Scaling Limits</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#debugging-mpi-programs">Debugging MPI Programs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#common-issues">Common Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#debugging-tools">Debugging Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_parallelism.html#testing-mpi">Testing MPI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#configuration-example">Configuration Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mpi_parallelism.html#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/particle_buffer.html">API Reference: ParticleBuffer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#class-jericho-particlebuffer">Class: <code class="docutils literal notranslate"><span class="pre">jericho::ParticleBuffer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#header-file">Header File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#class-declaration">Class Declaration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#constructors">Constructors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#particlebuffer-size-t-initial-capacity-int-device-id-0">ParticleBuffer(size_t initial_capacity, int device_id = 0)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#particlebuffer">~ParticleBuffer()</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#member-functions">Member Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#memory-management">Memory Management</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#allocate-size-t-capacity">allocate(size_t capacity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#destroy">destroy()</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#resize-size-t-new-capacity">resize(size_t new_capacity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#compact">compact()</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#particle-operations">Particle Operations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#add-particle-double-px-double-py-double-pvx-double-pvy-double-pweight-uint8-t-ptype">add_particle(double px, double py, double pvx, double pvy, double pweight, uint8_t ptype)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#remove-particle-size-t-idx">remove_particle(size_t idx)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#add-particles-batch">add_particles_batch(…)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#data-transfer">Data Transfer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#copy-to-device">copy_to_device(…)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#copy-to-host">copy_to_host(…)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#accessors">Accessors</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#get-count">get_count()</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#get-capacity">get_capacity()</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#get-memory-bytes">get_memory_bytes()</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/particle_buffer.html#print-stats">print_stats()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#helper-functions">Helper Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#initialize-uniform">initialize_uniform(…)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#usage-examples">Usage Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#example-1-basic-usage">Example 1: Basic Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/particle_buffer.html#example-2-particle-migration">Example 2: Particle Migration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#performance-notes">Performance Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/particle_buffer.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/fields.html">API Reference: Field Arrays</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/fields.html#quick-reference">Quick Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fields.html#key-features">Key Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fields.html#data-members">Data Members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fields.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/boundaries.html">API Reference: Boundary Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/boundaries.html#boundary-types">Boundary Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/boundaries.html#periodic-boundaries">Periodic Boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/boundaries.html#outflow-boundaries">Outflow Boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/boundaries.html#inflow-boundaries">Inflow Boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/boundaries.html#reflecting-boundaries">Reflecting Boundaries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/boundaries.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/boundaries.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/mpi_manager.html">API Reference: MPI Manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/mpi_manager.html#quick-reference">Quick Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/mpi_manager.html#key-features">Key Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/mpi_manager.html#data-members">Data Members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/mpi_manager.html#key-methods">Key Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/mpi_manager.html#domain-decomposition">Domain Decomposition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/mpi_manager.html#communication">Communication</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/mpi_manager.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/mpi_manager.html#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="performance_tuning.html">Performance Tuning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#performance-overview">Performance Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#target-performance-metrics">Target Performance Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#typical-performance">Typical Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#configuration-tuning">Configuration Tuning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#timestep-selection">Timestep Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#particles-per-cell">Particles Per Cell</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#grid-resolution">Grid Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#output-cadence">Output Cadence</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#cuda-optimization">CUDA Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#threads-per-block">Threads Per Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#memory-pool-size">Memory Pool Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#gpu-selection">GPU Selection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#mpi-optimization">MPI Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#domain-decomposition">Domain Decomposition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#cuda-aware-mpi">CUDA-Aware MPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#overlap-communication">Overlap Communication</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#profiling-and-analysis">Profiling and Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#using-nvidia-smi">Using nvidia-smi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#using-nvprof">Using nvprof</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#using-nsight-systems">Using Nsight Systems</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#memory-usage-optimization">Memory Usage Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#estimate-memory-requirements">Estimate Memory Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#reduce-memory-usage">Reduce Memory Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#common-performance-issues">Common Performance Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#slow-particle-push">Slow Particle Push</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#slow-particle-to-grid">Slow Particle-to-Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#poor-mpi-scaling">Poor MPI Scaling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance_tuning.html#high-memory-usage">High Memory Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#best-practices-summary">Best Practices Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#performance-checklist">Performance Checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance_tuning.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#build-issues">Build Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#nvcc-not-found">“nvcc not found”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#compute-capability-mismatch">“compute capability mismatch”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#mpi-not-found">“MPI not found”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#hdf5-not-found">“HDF5 not found”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#runtime-issues">Runtime Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#cuda-out-of-memory">“CUDA out of memory”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#no-cuda-capable-device">“No CUDA-capable device”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#mpi-init-failed">“MPI_Init failed”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#physics-issues">Physics Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#energy-not-conserved">Energy Not Conserved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#no-magnetic-reconnection">No Magnetic Reconnection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#particles-escaping-domain">Particles Escaping Domain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#nan-values-appearing">NaN Values Appearing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#performance-issues">Performance Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#simulation-too-slow">Simulation Too Slow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#poor-mpi-scaling">Poor MPI Scaling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#gpu-thermal-throttling">GPU Thermal Throttling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#output-issues">Output Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#permission-denied-writing-output">“Permission denied” Writing Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#output-files-corrupted">Output Files Corrupted</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#diagnostic-collection">Diagnostic Collection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#before-reporting-issues">Before Reporting Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#getting-help">Getting Help</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#self-help-resources">Self-Help Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#reporting-bugs">Reporting Bugs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#community-support">Community Support</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#quick-checks">Quick Checks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#common-mistakes">Common Mistakes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Citation and Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-cite">How to Cite</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bibtex-entry">BibTeX Entry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#published-papers">Published Papers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#types-of-contributions">Types of Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pull-request-guidelines">Pull Request Guidelines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-bugs">Reporting Bugs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requesting-features">Requesting Features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#core-developers">Core Developers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Acknowledgments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#third-party-libraries">Third-Party Libraries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#contact">Contact</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#funding">Funding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publications-using-jericho-mk-ii">Publications Using Jericho Mk II</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Jericho Mk II</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Citation and Contributing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/citation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="citation-and-contributing">
+<h1>Citation and Contributing<a class="headerlink" href="#citation-and-contributing" title="Link to this heading"></a></h1>
+<section id="how-to-cite">
+<h2>How to Cite<a class="headerlink" href="#how-to-cite" title="Link to this heading"></a></h2>
+<p>If you use Jericho Mk II in your research, please cite:</p>
+<section id="bibtex-entry">
+<h3>BibTeX Entry<a class="headerlink" href="#bibtex-entry" title="Link to this heading"></a></h3>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@software</span><span class="p">{</span><span class="nl">jericho_mkII</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Wiggs, Joshua and Arridge, Christopher S. and</span>
+<span class="s">            Greenyer, George and Mander, Steve}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Jericho Mk II: GPU-Accelerated Hybrid PIC-MHD Code for Plasma Simulation}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2025}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/st7ma784/jericho_mkII}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2.0.0}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">note</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{DOI will be assigned upon publication}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="published-papers">
+<h3>Published Papers<a class="headerlink" href="#published-papers" title="Link to this heading"></a></h3>
+<p>If there are published papers using Jericho Mk II, cite the relevant paper(s):</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span><span class="p">{</span><span class="nl">wiggs2025jericho</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Wiggs, J. and Arridge, C. S. and Others}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Jericho Mk II: A Next-Generation Hybrid PIC-MHD Code}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal Name}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2025}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{XX}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">pages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{XXX--XXX}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">doi</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{XX.XXXX/XXXXXX}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="acknowledgments">
+<h3>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading"></a></h3>
+<p>In your acknowledgments section, please include:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>This research made use of Jericho Mk II, a GPU-accelerated hybrid PIC-MHD
+plasma simulation code developed at Lancaster University
+(https://github.com/st7ma784/jericho_mkII).
+</pre></div>
+</div>
+</section>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h2>
+<p>We welcome contributions! Here’s how to get involved.</p>
+<section id="types-of-contributions">
+<h3>Types of Contributions<a class="headerlink" href="#types-of-contributions" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Bug reports:</strong> Found an issue? Open a GitHub issue</p></li>
+<li><p><strong>Bug fixes:</strong> Submit a pull request</p></li>
+<li><p><strong>New features:</strong> Propose via GitHub issue first</p></li>
+<li><p><strong>Documentation:</strong> Improve or add documentation</p></li>
+<li><p><strong>Examples:</strong> Share interesting simulation setups</p></li>
+<li><p><strong>Performance improvements:</strong> Optimize kernels or algorithms</p></li>
+</ul>
+</section>
+<section id="getting-started">
+<h3>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Fork the repository:</strong></p>
+<p>Visit <a class="reference external" href="https://github.com/st7ma784/jericho_mkII">https://github.com/st7ma784/jericho_mkII</a> and click “Fork”</p>
+</li>
+<li><p><strong>Clone your fork:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/YOUR_USERNAME/jericho_mkII.git
+<span class="nb">cd</span><span class="w"> </span>jericho_mkII
+</pre></div>
+</div>
+</li>
+<li><p><strong>Create a branch:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/my-new-feature
+</pre></div>
+</div>
+</li>
+<li><p><strong>Make changes:</strong></p>
+<p>Edit code, add tests, update documentation</p>
+</li>
+<li><p><strong>Test your changes:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build and test</span>
+mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>-DCMAKE_CUDA_ARCHITECTURES<span class="o">=</span><span class="m">80</span><span class="w"> </span>..
+make<span class="w"> </span>-j
+
+<span class="c1"># Run tests</span>
+ctest
+
+<span class="c1"># Run example</span>
+./jericho_mkII<span class="w"> </span>../examples/minimal_test.toml
+</pre></div>
+</div>
+</li>
+<li><p><strong>Commit changes:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add feature: description of feature&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Push to your fork:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/my-new-feature
+</pre></div>
+</div>
+</li>
+<li><p><strong>Open pull request:</strong></p>
+<p>Go to GitHub and click “New Pull Request”</p>
+</li>
+</ol>
+</section>
+<section id="code-style">
+<h3>Code Style<a class="headerlink" href="#code-style" title="Link to this heading"></a></h3>
+<p><strong>C++ Code:</strong></p>
+<ul class="simple">
+<li><p>Follow Google C++ Style Guide</p></li>
+<li><p>Use meaningful variable names</p></li>
+<li><p>Add comments for complex algorithms</p></li>
+<li><p>Keep functions &lt; 50 lines when possible</p></li>
+</ul>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Good</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">compute_kinetic_energy</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ParticleBuffer</span><span class="o">&amp;</span><span class="w"> </span><span class="n">particles</span><span class="p">,</span>
+<span class="w">                               </span><span class="kt">double</span><span class="w"> </span><span class="n">mass</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">total_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">particles</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">particles</span><span class="p">.</span><span class="n">active</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">particles</span><span class="p">.</span><span class="n">vx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">particles</span><span class="p">.</span><span class="n">vx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                   </span><span class="n">particles</span><span class="p">.</span><span class="n">vy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">particles</span><span class="p">.</span><span class="n">vy</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><span class="n">total_energy</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">mass</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">particles</span><span class="p">.</span><span class="n">weight</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">total_energy</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Bad</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ParticleBuffer</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">p</span><span class="p">.</span><span class="n">active</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">vx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">p</span><span class="p">.</span><span class="n">vx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">p</span><span class="p">.</span><span class="n">vy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">p</span><span class="p">.</span><span class="n">vy</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><span class="n">e</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">p</span><span class="p">.</span><span class="n">weight</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">v2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>CUDA Kernels:</strong></p>
+<ul class="simple">
+<li><p>Optimize for coalesced memory access</p></li>
+<li><p>Minimize divergence</p></li>
+<li><p>Document thread/block requirements</p></li>
+<li><p>Add performance notes</p></li>
+</ul>
+<div class="highlight-cuda notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * @brief Advance particle velocities using Boris pusher</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param[in,out] vx, vy Particle velocities (modified in-place)</span>
+<span class="cm"> * @param[in] Ex, Ey, Bz Field values at particle positions</span>
+<span class="cm"> * @param[in] n_particles Number of particles</span>
+<span class="cm"> * @param[in] dt Timestep</span>
+<span class="cm"> *</span>
+<span class="cm"> * @note Launch with 256 threads per block for optimal occupancy</span>
+<span class="cm"> * @note Memory bandwidth bound: ~100 GB/s on A100</span>
+<span class="cm"> */</span>
+<span class="kr">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">boris_push_kernel</span><span class="p">(...)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Python Scripts:</strong></p>
+<ul class="simple">
+<li><p>Follow PEP 8</p></li>
+<li><p>Add docstrings</p></li>
+<li><p>Include type hints (Python 3.7+)</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">read_fields</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read field data from HDF5 file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename: Path to HDF5 file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dictionary with field arrays and metadata</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ...</span>
+</pre></div>
+</div>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Update docs when adding features</p></li>
+<li><p>Use reStructuredText (.rst) format</p></li>
+<li><p>Include examples</p></li>
+<li><p>Add to appropriate section in <code class="docutils literal notranslate"><span class="pre">docs/index.rst</span></code></p></li>
+</ul>
+</section>
+<section id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h3>
+<p><strong>Unit tests:</strong></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// tests/test_boris.cpp</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;gtest/gtest.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;boris_pusher.h&quot;</span>
+
+<span class="n">TEST</span><span class="p">(</span><span class="n">BorisTest</span><span class="p">,</span><span class="w"> </span><span class="n">EnergyConservation</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Setup</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">vx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e6</span><span class="p">,</span><span class="w"> </span><span class="n">vy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">Ex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">Ey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">Bz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e-9</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">q_over_m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">9.578e7</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">v0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vx</span><span class="o">*</span><span class="n">vx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vy</span><span class="o">*</span><span class="n">vy</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Push 1000 steps</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">boris_push</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span><span class="w"> </span><span class="n">vy</span><span class="p">,</span><span class="w"> </span><span class="n">Ex</span><span class="p">,</span><span class="w"> </span><span class="n">Ey</span><span class="p">,</span><span class="w"> </span><span class="n">Bz</span><span class="p">,</span><span class="w"> </span><span class="n">q_over_m</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">v1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vx</span><span class="o">*</span><span class="n">vx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vy</span><span class="o">*</span><span class="n">vy</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Verify energy conservation</span>
+<span class="w">    </span><span class="n">EXPECT_NEAR</span><span class="p">(</span><span class="n">v0</span><span class="p">,</span><span class="w"> </span><span class="n">v1</span><span class="p">,</span><span class="w"> </span><span class="mf">1e-10</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Integration tests:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/integration/test_reconnection.sh</span>
+<span class="c1">#!/bin/bash</span>
+
+<span class="c1"># Run reconnection simulation</span>
+./jericho_mkII<span class="w"> </span>tests/integration/reconnection.toml
+
+<span class="c1"># Check output exists</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span>output/fields_000100.h5<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+
+<span class="c1"># Check energy conservation</span>
+python3<span class="w"> </span>scripts/check_energy.py<span class="w"> </span>output/diagnostics.csv<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Integration test PASSED&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="pull-request-guidelines">
+<h3>Pull Request Guidelines<a class="headerlink" href="#pull-request-guidelines" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>One feature per PR:</strong> Keep PRs focused</p></li>
+<li><p><strong>Write tests:</strong> Add unit tests for new code</p></li>
+<li><p><strong>Update docs:</strong> Document new features</p></li>
+<li><p><strong>Pass CI:</strong> Ensure all tests pass</p></li>
+<li><p><strong>Clear description:</strong> Explain what and why</p></li>
+</ol>
+<p><strong>Good PR description:</strong></p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gu">## Description</span>
+Adds support for multiple ion species with different charge/mass ratios.
+
+<span class="gu">## Motivation</span>
+Current code only supports single ion species. Many plasma scenarios
+(e.g., magnetosphere) have multiple ion populations (H+, O+, He+).
+
+<span class="gu">## Changes</span>
+<span class="k">-</span><span class="w"> </span>Modified ParticleBuffer to support multiple species
+<span class="k">-</span><span class="w"> </span>Added species-specific q/m ratios in config
+<span class="k">-</span><span class="w"> </span>Updated Boris pusher to handle different masses
+<span class="k">-</span><span class="w"> </span>Added test case with H+ and O+ ions
+
+<span class="gu">## Testing</span>
+<span class="k">-</span><span class="w"> </span>Unit tests pass (test_multi_species)
+<span class="k">-</span><span class="w"> </span>Integration test with H+/O+ reconnection
+<span class="k">-</span><span class="w"> </span>Energy conservation verified
+
+<span class="gu">## Documentation</span>
+<span class="k">-</span><span class="w"> </span>Updated configuration.rst with species examples
+<span class="k">-</span><span class="w"> </span>Added tutorial for multi-species simulations
+</pre></div>
+</div>
+</section>
+<section id="reporting-bugs">
+<h3>Reporting Bugs<a class="headerlink" href="#reporting-bugs" title="Link to this heading"></a></h3>
+<p>Use GitHub Issues with this template:</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gs">**Bug Description:**</span>
+Clear description of the bug
+
+<span class="gs">**To Reproduce:**</span>
+<span class="k">1.</span> Step 1
+<span class="k">2.</span> Step 2
+<span class="k">3.</span> See error
+
+<span class="gs">**Expected Behavior:**</span>
+What should happen
+
+<span class="gs">**Actual Behavior:**</span>
+What actually happens
+
+<span class="gs">**Environment:**</span>
+<span class="k">-</span><span class="w"> </span>GPU: NVIDIA RTX 3080
+<span class="k">-</span><span class="w"> </span>CUDA: 11.8
+<span class="k">-</span><span class="w"> </span>OS: Ubuntu 22.04
+<span class="k">-</span><span class="w"> </span>MPI: OpenMPI 4.1.2
+
+<span class="gs">**Config File:**</span>
+<span class="sb">```toml</span>
+<span class="k">[paste</span><span class="w"> </span><span class="k">config</span><span class="w"> </span><span class="k">here]</span>
+<span class="sb">```</span>
+
+<span class="gs">**Error Log:**</span>
+<span class="sb">```</span>
+<span class="sb">[paste error messages]</span>
+<span class="sb">```</span>
+</pre></div>
+</div>
+</section>
+<section id="requesting-features">
+<h3>Requesting Features<a class="headerlink" href="#requesting-features" title="Link to this heading"></a></h3>
+<p>Use GitHub Issues with this template:</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gs">**Feature Request:**</span>
+Brief title
+
+<span class="gs">**Problem:**</span>
+What problem does this solve?
+
+<span class="gs">**Proposed Solution:**</span>
+How would you implement this?
+
+<span class="gs">**Alternatives:**</span>
+Other approaches considered?
+
+<span class="gs">**Additional Context:**</span>
+Any examples, references, or use cases?
+</pre></div>
+</div>
+</section>
+</section>
+<section id="code-of-conduct">
+<h2>Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Link to this heading"></a></h2>
+<p><strong>Be Respectful:</strong></p>
+<ul class="simple">
+<li><p>Treat all contributors with respect</p></li>
+<li><p>Welcome diverse perspectives</p></li>
+<li><p>Accept constructive criticism gracefully</p></li>
+</ul>
+<p><strong>Be Helpful:</strong></p>
+<ul class="simple">
+<li><p>Help newcomers get started</p></li>
+<li><p>Provide constructive feedback</p></li>
+<li><p>Share knowledge and experience</p></li>
+</ul>
+<p><strong>Be Professional:</strong></p>
+<ul class="simple">
+<li><p>Keep discussions on-topic</p></li>
+<li><p>No harassment or discrimination</p></li>
+<li><p>Resolve disagreements constructively</p></li>
+</ul>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>Jericho Mk II is released under the <strong>MIT License</strong>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MIT License
+
+Copyright (c) 2025 Joshua Wiggs, Christopher S. Arridge,
+                   George Greenyer, Steve Mander
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</pre></div>
+</div>
+<p><strong>What this means:</strong></p>
+<ul class="simple">
+<li><p>✅ Use for any purpose (commercial, academic, personal)</p></li>
+<li><p>✅ Modify and distribute</p></li>
+<li><p>✅ Private use</p></li>
+<li><p>⚠️ Must include license and copyright notice</p></li>
+<li><p>❌ No warranty provided</p></li>
+</ul>
+</section>
+<section id="credits">
+<h2>Credits<a class="headerlink" href="#credits" title="Link to this heading"></a></h2>
+<section id="core-developers">
+<h3>Core Developers<a class="headerlink" href="#core-developers" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Joshua Wiggs</strong> - Lead developer, GPU implementation</p></li>
+<li><p><strong>Christopher S. Arridge</strong> - Physics algorithms, validation</p></li>
+<li><p><strong>George Greenyer</strong> - Original Jericho code</p></li>
+<li><p><strong>Steve Mander</strong> - Original Jericho code</p></li>
+</ul>
+</section>
+<section id="id1">
+<h3>Acknowledgments<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Lancaster University Physics Department</p></li>
+<li><p>STFC DiRAC HPC Facility</p></li>
+<li><p>NVIDIA GPU Grant Program</p></li>
+<li><p>Original Jericho development team</p></li>
+</ul>
+</section>
+<section id="third-party-libraries">
+<h3>Third-Party Libraries<a class="headerlink" href="#third-party-libraries" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>CUDA Toolkit</strong> - NVIDIA Corporation</p></li>
+<li><p><strong>MPI</strong> - Open MPI or MPICH</p></li>
+<li><p><strong>HDF5</strong> - The HDF Group</p></li>
+<li><p><strong>CMake</strong> - Kitware, Inc.</p></li>
+</ul>
+</section>
+</section>
+<section id="contact">
+<h2>Contact<a class="headerlink" href="#contact" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Project Lead:</strong> Josh Wiggs (<a class="reference external" href="mailto:j&#46;wiggs&#37;&#52;&#48;lancaster&#46;ac&#46;uk">j<span>&#46;</span>wiggs<span>&#64;</span>lancaster<span>&#46;</span>ac<span>&#46;</span>uk</a>)</p></li>
+<li><p><strong>Principal Investigator:</strong> Chris Arridge (<a class="reference external" href="mailto:c&#46;arridge&#37;&#52;&#48;lancaster&#46;ac&#46;uk">c<span>&#46;</span>arridge<span>&#64;</span>lancaster<span>&#46;</span>ac<span>&#46;</span>uk</a>)</p></li>
+<li><p><strong>GitHub:</strong> <a class="reference external" href="https://github.com/st7ma784/jericho_mkII">https://github.com/st7ma784/jericho_mkII</a></p></li>
+<li><p><strong>Documentation:</strong> <a class="reference external" href="https://st7ma784.github.io/jericho_mkII/">https://st7ma784.github.io/jericho_mkII/</a></p></li>
+</ul>
+</section>
+<section id="funding">
+<h2>Funding<a class="headerlink" href="#funding" title="Link to this heading"></a></h2>
+<p>This work was supported by:</p>
+<ul class="simple">
+<li><p>Lancaster University</p></li>
+<li><p>Science and Technology Facilities Council (STFC)</p></li>
+<li><p>[Add other funding sources]</p></li>
+</ul>
+</section>
+<section id="publications-using-jericho-mk-ii">
+<h2>Publications Using Jericho Mk II<a class="headerlink" href="#publications-using-jericho-mk-ii" title="Link to this heading"></a></h2>
+<p>If you’ve published work using Jericho Mk II, let us know! We’ll add it here.</p>
+<ol class="arabic simple">
+<li><p>[Your paper here]</p></li>
+</ol>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="getting_started.html"><span class="doc">Getting Started</span></a> - Installation and usage</p></li>
+<li><p><a class="reference internal" href="architecture.html"><span class="doc">Architecture and Design</span></a> - System design</p></li>
+<li><p>GitHub repository - Source code and issues</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="troubleshooting.html" class="btn btn-neutral float-left" title="Troubleshooting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Lancaster University.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

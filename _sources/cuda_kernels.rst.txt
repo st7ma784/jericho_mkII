@@ -1,0 +1,685 @@
+CUDA Kernels
+============
+
+This document provides detailed documentation of the CUDA kernel implementations in Jericho Mk II, explaining both the physics algorithms and GPU optimization strategies.
+
+Overview
+--------
+
+All compute-intensive operations in Jericho Mk II are implemented as CUDA kernels that execute on the GPU. These include:
+
+1. **Particle operations**: Push, boundary conditions, particle-to-grid
+2. **Field solvers**: Ohm's law, Faraday's law, Ampere's law
+3. **Diagnostic computations**: Energy, momentum, temperature
+4. **MPI communication**: Pack/unpack boundary data
+
+Kernel Design Principles
+------------------------
+
+1. **Coalesced memory access**: SoA layout ensures adjacent threads access adjacent memory
+2. **Minimize divergence**: Avoid branch divergence where possible
+3. **Maximize occupancy**: Use appropriate block size and register count
+4. **Reduce synchronization**: Minimize __syncthreads() and atomicAdd()
+5. **Kernel fusion**: Combine operations to reduce memory bandwidth
+
+Particle Kernels
+----------------
+
+Particle Push Kernel
+~~~~~~~~~~~~~~~~~~~~
+
+**File**: ``cuda/particles.cu``
+
+**Purpose**: Advance particle positions and velocities using Boris pusher.
+
+**Algorithm:**
+
+.. code-block:: cuda
+
+   __global__ void advance_particles_kernel(
+       double* x, double* y, double* vx, double* vy,
+       const double* weight, const uint8_t* type, const bool* active,
+       const double* Ex, const double* Ey, const double* Bz,
+       int nx, int ny, double dx, double dy,
+       double x_min, double y_min, double dt,
+       double q_over_m, size_t n_particles)
+   {
+       // Get particle index for this thread
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       if (i >= n_particles) return;
+       if (!active[i]) return;  // Skip inactive particles
+       
+       // Load particle data (coalesced read)
+       double px = x[i];
+       double py = y[i];
+       double pvx = vx[i];
+       double pvy = vy[i];
+       
+       // Interpolate E, B fields at particle position (bilinear)
+       double Ex_p = bilinear_interp(Ex, nx, px, py, dx, dy, x_min, y_min);
+       double Ey_p = bilinear_interp(Ey, nx, px, py, dx, dy, x_min, y_min);
+       double Bz_p = bilinear_interp(Bz, nx, px, py, dx, dy, x_min, y_min);
+       
+       // Boris push (updates pvx, pvy)
+       boris_push(pvx, pvy, Ex_p, Ey_p, Bz_p, q_over_m, dt);
+       
+       // Update position
+       px += pvx * dt;
+       py += pvy * dt;
+       
+       // Store results (coalesced write)
+       x[i] = px;
+       y[i] = py;
+       vx[i] = pvx;
+       vy[i] = pvy;
+   }
+
+**Launch configuration:**
+
+.. code-block:: cpp
+
+   int threads_per_block = 256;  // Optimal for most GPUs
+   int num_blocks = (n_particles + threads_per_block - 1) / threads_per_block;
+   
+   advance_particles_kernel<<<num_blocks, threads_per_block>>>(
+       particles.x, particles.y, particles.vx, particles.vy,
+       particles.weight, particles.type, particles.active,
+       fields.Ex, fields.Ey, fields.Bz,
+       nx, ny, dx, dy, x_min, y_min, dt, q_over_m, n_particles);
+
+**Performance analysis:**
+
+- **Memory bandwidth**: Each particle reads 7 doubles + 2 bytes, writes 4 doubles = 88 bytes/particle
+- **Arithmetic intensity**: ~100 FLOPs / 88 bytes = 1.14 FLOPs/byte (memory-bound)
+- **Occupancy**: 256 threads/block × 32 registers/thread ≈ 75% occupancy (good)
+
+**Optimization notes:**
+
+1. **Coalesced access**: SoA layout ensures coalescing
+2. **No divergence**: All threads follow same path (except inactive check)
+3. **Register pressure**: Keep intermediate values in registers
+4. **No shared memory needed**: Each thread works independently
+
+Bilinear Interpolation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+**Purpose**: Interpolate grid field value to particle position.
+
+.. code-block:: cuda
+
+   __device__ __host__ inline double bilinear_interp(
+       const double* field, int nx,
+       double px, double py, double dx, double dy,
+       double x_min, double y_min)
+   {
+       // Convert particle position to grid coordinates
+       double gx = (px - x_min) / dx;
+       double gy = (py - y_min) / dy;
+       
+       // Lower-left cell indices
+       int ix = static_cast<int>(floor(gx));
+       int iy = static_cast<int>(floor(gy));
+       
+       // Fractional offsets within cell
+       double fx = gx - ix;
+       double fy = gy - iy;
+       
+       // Bilinear weights
+       double w00 = (1.0 - fx) * (1.0 - fy);  // (i,   j)
+       double w10 = fx * (1.0 - fy);          // (i+1, j)
+       double w01 = (1.0 - fx) * fy;          // (i,   j+1)
+       double w11 = fx * fy;                  // (i+1, j+1)
+       
+       // Interpolate (assumes periodic or ghost cells)
+       return w00 * field[iy * nx + ix] +
+              w10 * field[iy * nx + (ix + 1)] +
+              w01 * field[(iy + 1) * nx + ix] +
+              w11 * field[(iy + 1) * nx + (ix + 1)];
+   }
+
+**Notes:**
+
+- Uses first-order (bilinear) interpolation for stability
+- Higher-order interpolation (e.g., cubic) possible but more expensive
+- Assumes periodic boundaries or ghost cells handle edges
+
+Boris Rotation
+~~~~~~~~~~~~~~
+
+**Purpose**: Rotate velocity by magnetic field (Boris algorithm core).
+
+.. code-block:: cuda
+
+   __device__ __host__ inline void boris_push(
+       double& vx, double& vy,
+       double Ex, double Ey, double Bz,
+       double q_over_m, double dt)
+   {
+       const double half_dt = 0.5 * dt;
+       const double qm_half_dt = q_over_m * half_dt;
+       
+       // Step 1: Half electric acceleration
+       double vx_minus = vx + qm_half_dt * Ex;
+       double vy_minus = vy + qm_half_dt * Ey;
+       
+       // Step 2: Magnetic rotation
+       double t = qm_half_dt * Bz;           // Rotation angle
+       double t2 = t * t;
+       double s = 2.0 * t / (1.0 + t2);      // Rotation factor
+       
+       double vx_prime = vx_minus + vy_minus * t;
+       double vy_prime = vy_minus - vx_minus * t;
+       
+       double vx_plus = vx_minus + vy_prime * s;
+       double vy_plus = vy_minus - vx_prime * s;
+       
+       // Step 3: Half electric acceleration
+       vx = vx_plus + qm_half_dt * Ex;
+       vy = vy_plus + qm_half_dt * Ey;
+   }
+
+**Why Boris?**
+
+- **Energy conserving**: For E=0, :math:`|v|` is exactly preserved
+- **Second-order accurate**: :math:`O(\Delta t^2)` error
+- **Unconditionally stable**: No CFL limit on :math:`\Omega_i \Delta t`
+
+**Mathematics:**
+
+The rotation by angle :math:`\theta = q B \Delta t / m` is implemented as:
+
+.. math::
+
+   \mathbf{v}^+ = \mathbf{v}^- + \frac{2\mathbf{t}}{1 + |\mathbf{t}|^2} \times (\mathbf{v}^- + \mathbf{v}^- \times \mathbf{t})
+
+where :math:`\mathbf{t} = \frac{q\mathbf{B}}{m}\frac{\Delta t}{2}`.
+
+Particle-to-Grid Kernels
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Purpose**: Deposit particle charge and current onto grid.
+
+.. code-block:: cuda
+
+   __global__ void deposit_charge_current_kernel(
+       const double* x, const double* y,
+       const double* vx, const double* vy,
+       const double* weight, const uint8_t* type, const bool* active,
+       double* charge_density, double* Jx, double* Jy,
+       int nx, int ny, double dx, double dy,
+       double x_min, double y_min,
+       double q, size_t n_particles)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       if (i >= n_particles) return;
+       if (!active[i]) return;
+       
+       double px = x[i];
+       double py = y[i];
+       double pvx = vx[i];
+       double pvy = vy[i];
+       double w = weight[i];
+       
+       // Convert to grid coordinates
+       double gx = (px - x_min) / dx;
+       double gy = (py - y_min) / dy;
+       
+       int ix = static_cast<int>(floor(gx));
+       int iy = static_cast<int>(floor(gy));
+       
+       double fx = gx - ix;
+       double fy = gy - iy;
+       
+       // Bilinear shape function weights
+       double w00 = (1.0 - fx) * (1.0 - fy);
+       double w10 = fx * (1.0 - fy);
+       double w01 = (1.0 - fx) * fy;
+       double w11 = fx * fy;
+       
+       // Particle contribution to density and current
+       double rho_p = q * w;           // Charge
+       double jx_p = q * w * pvx;      // Current x
+       double jy_p = q * w * pvy;      // Current y
+       
+       // Deposit to 4 neighboring grid points (atomic for thread safety)
+       atomicAdd(&charge_density[iy * nx + ix],         w00 * rho_p);
+       atomicAdd(&charge_density[iy * nx + (ix + 1)],   w10 * rho_p);
+       atomicAdd(&charge_density[(iy + 1) * nx + ix],   w01 * rho_p);
+       atomicAdd(&charge_density[(iy + 1) * nx + (ix + 1)], w11 * rho_p);
+       
+       atomicAdd(&Jx[iy * nx + ix],         w00 * jx_p);
+       atomicAdd(&Jx[iy * nx + (ix + 1)],   w10 * jx_p);
+       atomicAdd(&Jx[(iy + 1) * nx + ix],   w01 * jx_p);
+       atomicAdd(&Jx[(iy + 1) * nx + (ix + 1)], w11 * jx_p);
+       
+       atomicAdd(&Jy[iy * nx + ix],         w00 * jy_p);
+       atomicAdd(&Jy[iy * nx + (ix + 1)],   w10 * jy_p);
+       atomicAdd(&Jy[(iy + 1) * nx + ix],   w01 * jy_p);
+       atomicAdd(&Jy[(iy + 1) * nx + (ix + 1)], w11 * jy_p);
+   }
+
+**Performance considerations:**
+
+- **atomicAdd() bottleneck**: Multiple threads may write to same cell
+- **Optimization**: Use shared memory for local accumulation:
+
+.. code-block:: cuda
+
+   // Improved version using shared memory
+   __shared__ double s_rho[BLOCK_SIZE_Y][BLOCK_SIZE_X];
+   __shared__ double s_Jx[BLOCK_SIZE_Y][BLOCK_SIZE_X];
+   __shared__ double s_Jy[BLOCK_SIZE_Y][BLOCK_SIZE_X];
+   
+   // Initialize shared memory
+   s_rho[ty][tx] = 0.0;
+   s_Jx[ty][tx] = 0.0;
+   s_Jy[ty][tx] = 0.0;
+   __syncthreads();
+   
+   // Deposit to shared memory (fewer conflicts)
+   atomicAdd(&s_rho[local_iy][local_ix], w00 * rho_p);
+   // ... etc
+   
+   __syncthreads();
+   
+   // Write shared memory to global memory (1 thread per cell)
+   if (tx < BLOCK_SIZE_X && ty < BLOCK_SIZE_Y) {
+       atomicAdd(&charge_density[global_iy * nx + global_ix], s_rho[ty][tx]);
+       // ... etc
+   }
+
+This reduces global atomicAdd() calls by ~100x.
+
+Field Solver Kernels
+--------------------
+
+Ohm's Law Kernel
+~~~~~~~~~~~~~~~~
+
+**Purpose**: Compute electric field from current, magnetic field, and plasma properties.
+
+**Generalized Ohm's law:**
+
+.. math::
+
+   \mathbf{E} = -\mathbf{v}_e \times \mathbf{B} + \frac{1}{en_e}\mathbf{J} \times \mathbf{B} + \eta\mathbf{J}
+
+.. code-block:: cuda
+
+   __global__ void compute_electric_field_kernel(
+       double* Ex, double* Ey,
+       const double* Bz,
+       const double* Jx, const double* Jy,
+       const double* density,
+       int nx, int ny, double eta, bool hall_term)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       int j = blockIdx.y * blockDim.y + threadIdx.y;
+       
+       if (i >= nx || j >= ny) return;
+       
+       int idx = j * nx + i;
+       
+       double jx = Jx[idx];
+       double jy = Jy[idx];
+       double bz = Bz[idx];
+       double n = density[idx];
+       
+       // Resistive term: η J
+       double Ex_resistive = eta * jx;
+       double Ey_resistive = eta * jy;
+       
+       // Hall term: (1/en) J × B
+       double Ex_hall = 0.0;
+       double Ey_hall = 0.0;
+       if (hall_term && n > 1e3) {  // Avoid division by zero
+           double factor = 1.0 / (ELEMENTARY_CHARGE * n);
+           Ex_hall = factor * jy * bz;   // (J × B)_x = Jy * Bz
+           Ey_hall = -factor * jx * bz;  // (J × B)_y = -Jx * Bz
+       }
+       
+       // Total electric field
+       Ex[idx] = Ex_resistive + Ex_hall;
+       Ey[idx] = Ey_resistive + Ey_hall;
+   }
+
+**Launch:**
+
+.. code-block:: cpp
+
+   dim3 threads(16, 16);  // 256 threads per block
+   dim3 blocks((nx + 15) / 16, (ny + 15) / 16);
+   
+   compute_electric_field_kernel<<<blocks, threads>>>(
+       fields.Ex, fields.Ey, fields.Bz,
+       fields.Jx, fields.Jy, fields.density,
+       nx, ny, eta, true);
+
+Faraday's Law Kernel
+~~~~~~~~~~~~~~~~~~~~~
+
+**Purpose**: Update magnetic field from electric field.
+
+**Faraday's law:**
+
+.. math::
+
+   \frac{\partial \mathbf{B}}{\partial t} = -\nabla \times \mathbf{E}
+
+**2.5D form (only Bz component):**
+
+.. math::
+
+   \frac{\partial B_z}{\partial t} = -\left(\frac{\partial E_y}{\partial x} - \frac{\partial E_x}{\partial y}\right)
+
+.. code-block:: cuda
+
+   __global__ void update_magnetic_field_kernel(
+       double* Bz,
+       const double* Ex, const double* Ey,
+       int nx, int ny, double dx, double dy, double dt)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       int j = blockIdx.y * blockDim.y + threadIdx.y;
+       
+       // Skip boundaries (handled by ghost cell exchange)
+       if (i == 0 || i >= nx - 1 || j == 0 || j >= ny - 1) return;
+       
+       int idx = j * nx + i;
+       
+       // Central difference for curl E
+       double dEy_dx = (Ey[idx + 1] - Ey[idx - 1]) / (2.0 * dx);
+       double dEx_dy = (Ex[idx + nx] - Ex[idx - nx]) / (2.0 * dy);
+       
+       double curl_E_z = dEy_dx - dEx_dy;
+       
+       // Update Bz: B^{n+1} = B^n - Δt * curl(E)
+       Bz[idx] -= dt * curl_E_z;
+   }
+
+**Notes:**
+
+- Uses central differences for second-order accuracy
+- Ghost cells must be updated before this kernel
+- Boundaries handled separately
+
+Boundary Condition Kernels
+---------------------------
+
+Periodic Boundaries
+~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: cuda
+
+   __global__ void apply_periodic_boundaries_kernel(
+       double* x, double* y,
+       double x_min, double x_max, double y_min, double y_max,
+       size_t n_particles)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       if (i >= n_particles) return;
+       
+       double px = x[i];
+       double py = y[i];
+       
+       // Wrap x
+       double Lx = x_max - x_min;
+       if (px < x_min) px += Lx;
+       if (px >= x_max) px -= Lx;
+       
+       // Wrap y
+       double Ly = y_max - y_min;
+       if (py < y_min) py += Ly;
+       if (py >= y_max) py -= Ly;
+       
+       x[i] = px;
+       y[i] = py;
+   }
+
+Reflecting Boundaries
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: cuda
+
+   __global__ void apply_reflecting_boundaries_kernel(
+       double* x, double* y, double* vx, double* vy,
+       double x_min, double x_max, double y_min, double y_max,
+       size_t n_particles)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       if (i >= n_particles) return;
+       
+       double px = x[i];
+       double py = y[i];
+       double pvx = vx[i];
+       double pvy = vy[i];
+       
+       // Reflect at x boundaries
+       if (px < x_min) {
+           px = 2.0 * x_min - px;  // Mirror position
+           pvx = -pvx;              // Reverse velocity
+       } else if (px >= x_max) {
+           px = 2.0 * x_max - px;
+           pvx = -pvx;
+       }
+       
+       // Reflect at y boundaries
+       if (py < y_min) {
+           py = 2.0 * y_min - py;
+           pvy = -pvy;
+       } else if (py >= y_max) {
+           py = 2.0 * y_max - py;
+           pvy = -pvy;
+       }
+       
+       x[i] = px;
+       y[i] = py;
+       vx[i] = pvx;
+       vy[i] = pvy;
+   }
+
+Outflow Boundaries
+~~~~~~~~~~~~~~~~~~
+
+.. code-block:: cuda
+
+   __global__ void mark_outflow_particles_kernel(
+       const double* x, const double* y,
+       bool* active,
+       double x_min, double x_max, double y_min, double y_max,
+       size_t n_particles)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       if (i >= n_particles) return;
+       
+       double px = x[i];
+       double py = y[i];
+       
+       // Mark particle as inactive if outside domain
+       if (px < x_min || px >= x_max || py < y_min || py >= y_max) {
+           active[i] = false;
+       }
+   }
+
+Diagnostic Kernels
+------------------
+
+Kinetic Energy Kernel
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: cuda
+
+   __global__ void compute_kinetic_energy_kernel(
+       const double* vx, const double* vy,
+       const double* weight, const bool* active,
+       double* partial_sums,
+       double mass, size_t n_particles)
+   {
+       int i = blockIdx.x * blockDim.x + threadIdx.x;
+       
+       // Each thread computes local sum
+       double local_ke = 0.0;
+       if (i < n_particles && active[i]) {
+           double v2 = vx[i] * vx[i] + vy[i] * vy[i];
+           local_ke = 0.5 * mass * weight[i] * v2;
+       }
+       
+       // Block-level reduction using shared memory
+       __shared__ double s_data[256];
+       s_data[threadIdx.x] = local_ke;
+       __syncthreads();
+       
+       // Reduction in shared memory
+       for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+           if (threadIdx.x < s) {
+               s_data[threadIdx.x] += s_data[threadIdx.x + s];
+           }
+           __syncthreads();
+       }
+       
+       // Write block result
+       if (threadIdx.x == 0) {
+           partial_sums[blockIdx.x] = s_data[0];
+       }
+   }
+
+**Host-side reduction:**
+
+.. code-block:: cpp
+
+   // Sum partial results on host
+   double total_ke = 0.0;
+   for (int i = 0; i < num_blocks; ++i) {
+       total_ke += h_partial_sums[i];
+   }
+
+Performance Optimization
+------------------------
+
+Memory Access Patterns
+~~~~~~~~~~~~~~~~~~~~~~~
+
+**Good (coalesced):**
+
+.. code-block:: cuda
+
+   // All threads in warp access consecutive elements
+   for (int i = threadIdx.x; i < n; i += blockDim.x) {
+       data[i] = ...;  // Coalesced!
+   }
+
+**Bad (scattered):**
+
+.. code-block:: cuda
+
+   // Threads access random elements
+   int random_idx = hash(threadIdx.x);
+   data[random_idx] = ...;  // Scattered!
+
+Shared Memory Usage
+~~~~~~~~~~~~~~~~~~~
+
+**Pattern**: Use shared memory for:
+
+1. Block-local reductions
+2. Data reuse (stencil operations)
+3. Reducing global atomicAdd() contention
+
+**Example: Stencil operation**
+
+.. code-block:: cuda
+
+   __shared__ double s_field[BLOCK_Y + 2][BLOCK_X + 2];
+   
+   // Load halo (ghost cells)
+   // ... load interior and boundaries into s_field
+   __syncthreads();
+   
+   // Compute stencil using shared memory (fast!)
+   double center = s_field[ty + 1][tx + 1];
+   double left = s_field[ty + 1][tx];
+   double right = s_field[ty + 1][tx + 2];
+   // ... etc
+
+Occupancy Tuning
+~~~~~~~~~~~~~~~~
+
+**Check occupancy:**
+
+.. code-block:: bash
+
+   nvcc --ptxas-options=-v kernel.cu
+
+Look for "registers per thread" and "shared memory per block".
+
+**Target**: 50-100% occupancy
+
+**Tune**: Adjust threads per block and register usage
+
+Kernel Fusion
+~~~~~~~~~~~~~
+
+**Instead of:**
+
+.. code-block:: cuda
+
+   kernel1<<<...>>>(data);  // Read data, write data
+   kernel2<<<...>>>(data);  // Read data, write data
+
+**Fuse:**
+
+.. code-block:: cuda
+
+   fused_kernel<<<...>>>(data);  // Read data once, write once
+
+Saves 2x memory bandwidth!
+
+Profiling and Debugging
+------------------------
+
+Using nvprof
+~~~~~~~~~~~~
+
+.. code-block:: bash
+
+   # Profile kernel execution
+   nvprof ./jericho_mkII config.toml
+   
+   # Focus on specific kernel
+   nvprof --kernels advance_particles_kernel ./jericho_mkII config.toml
+   
+   # Memory bandwidth analysis
+   nvprof --metrics gld_efficiency,gst_efficiency ./jericho_mkII config.toml
+
+Using Nsight Compute
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+   # Detailed kernel analysis
+   ncu --set full -o profile ./jericho_mkII config.toml
+   
+   # Open GUI
+   ncu-ui profile.ncu-rep
+
+**Look for:**
+
+- Memory bandwidth utilization (target: > 70%)
+- Compute utilization (target: > 50% for compute-bound kernels)
+- Warp execution efficiency (target: > 90%)
+- Global memory coalescing (target: > 90%)
+
+CUDA-MEMCHECK
+~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+   # Check for memory errors
+   cuda-memcheck ./jericho_mkII config.toml
+
+See Also
+--------
+
+- :doc:`architecture` - Overall design
+- :doc:`performance_tuning` - Optimization strategies
+- :doc:`api/particle_buffer` - Particle data structures
