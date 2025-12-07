@@ -1,8 +1,0 @@
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/jericho_mkII.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/jericho_mkII_mpi.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/edit_cache.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/rebuild_cache.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/list_install_components.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/install.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/install/local.dir
-/home/user/Documents/jericho/jericho_mkII/build/CMakeFiles/install/strip.dir
