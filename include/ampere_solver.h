@@ -17,7 +17,6 @@
 
 #include "field_arrays.h"
 #include "mpi_domain_state.h"
-
 #include <vector>
 
 namespace jericho {
@@ -33,22 +32,22 @@ namespace jericho {
 struct AmpereConfig {
     /// Permeability of free space [H/m]
     static constexpr double mu_0 = 1.25663706212e-6;
-
+    
     /// Permittivity of free space [F/m]
     static constexpr double epsilon_0 = 8.854187817e-12;
-
+    
     /// Speed of light [m/s]
     static constexpr double c = 299792458.0;
-
+    
     /// Time integration scheme: "euler" or "predictor-corrector"
     bool use_pc_corrector = true;
-
+    
     /// Apply energy conservation correction
     bool apply_energy_correction = true;
-
+    
     /// Compute current density from particles
     bool compute_current = true;
-
+    
     /// Number of substeps for field evolution (for accuracy)
     int num_substeps = 1;
 };
@@ -73,8 +72,11 @@ struct AmpereConfig {
  */
 void compute_current_density(const double* particle_x, const double* particle_y,
                              const double* particle_vx, const double* particle_vy,
-                             const double* particle_q, int num_particles, double* Jx, double* Jy,
-                             int nx, int ny, double dx, double dy, bool use_device = true);
+                             const double* particle_q, int num_particles,
+                             double* Jx, double* Jy,
+                             int nx, int ny,
+                             double dx, double dy,
+                             bool use_device = true);
 
 /**
  * @brief Zero out current density arrays
@@ -83,7 +85,9 @@ void compute_current_density(const double* particle_x, const double* particle_y,
  * @param[in] nx, ny Grid dimensions
  * @param[in] use_device If true, arrays are on device (GPU)
  */
-void zero_current_density(double* Jx, double* Jy, int nx, int ny, bool use_device = true);
+void zero_current_density(double* Jx, double* Jy,
+                         int nx, int ny,
+                         bool use_device = true);
 
 // ============================================================================
 // Global Current Collection (MPI)
@@ -105,7 +109,8 @@ void zero_current_density(double* Jx, double* Jy, int nx, int ny, bool use_devic
  */
 double collect_global_current(const double* Jx_local, const double* Jy_local,
                               std::vector<double>& Jx_global, std::vector<double>& Jy_global,
-                              int nx, int ny, const MPIDomainState& mpi_state,
+                              int nx, int ny,
+                              const MPIDomainState& mpi_state,
                               bool use_device = true);
 
 /**
@@ -119,8 +124,10 @@ double collect_global_current(const double* Jx_local, const double* Jy_local,
  *
  * @return Total integrated current magnitude
  */
-double compute_global_current_magnitude(const double* Jx, const double* Jy, int nx, int ny,
-                                        double dx, double dy, const MPIDomainState& mpi_state,
+double compute_global_current_magnitude(const double* Jx, const double* Jy,
+                                        int nx, int ny,
+                                        double dx, double dy,
+                                        const MPIDomainState& mpi_state,
                                         bool use_device = true);
 
 // ============================================================================
@@ -136,8 +143,11 @@ double compute_global_current_magnitude(const double* Jx, const double* Jy, int 
  * @param[in] dx, dy Grid spacing
  * @param[in] use_device If true, arrays are on device (GPU)
  */
-void compute_curl_2d(const double* Fx, const double* Fy, double* curl_z, int nx, int ny, double dx,
-                     double dy, bool use_device = true);
+void compute_curl_2d(const double* Fx, const double* Fy,
+                     double* curl_z,
+                     int nx, int ny,
+                     double dx, double dy,
+                     bool use_device = true);
 
 // ============================================================================
 // Faraday's Law: ∂B/∂t = -∇×E
@@ -165,9 +175,13 @@ void compute_curl_2d(const double* Fx, const double* Fy, double* curl_z, int nx,
  *
  * @return Maximum field change (for stability monitoring)
  */
-double advance_magnetic_field_faraday(double* Bz, const double* Ex, const double* Ey, int nx,
-                                      int ny, double dx, double dy, double dt,
-                                      bool use_pc_corrector = true, bool use_device = true);
+double advance_magnetic_field_faraday(double* Bz,
+                                      const double* Ex, const double* Ey,
+                                      int nx, int ny,
+                                      double dx, double dy,
+                                      double dt,
+                                      bool use_pc_corrector = true,
+                                      bool use_device = true);
 
 /**
  * @brief Advance magnetic field - Euler method (simple but less accurate)
@@ -179,8 +193,12 @@ double advance_magnetic_field_faraday(double* Bz, const double* Ex, const double
  * @param[in] dt Timestep
  * @param[in] use_device If true, arrays are on device (GPU)
  */
-void advance_magnetic_field_euler(double* Bz, const double* Ex, const double* Ey, int nx, int ny,
-                                  double dx, double dy, double dt, bool use_device = true);
+void advance_magnetic_field_euler(double* Bz,
+                                  const double* Ex, const double* Ey,
+                                  int nx, int ny,
+                                  double dx, double dy,
+                                  double dt,
+                                  bool use_device = true);
 
 /**
  * @brief Advance magnetic field - Predictor-Corrector method (more accurate)
@@ -195,8 +213,12 @@ void advance_magnetic_field_euler(double* Bz, const double* Ex, const double* Ey
  * @param[in] dt Timestep
  * @param[in] use_device If true, arrays are on device (GPU)
  */
-void advance_magnetic_field_pc(double* Bz, const double* Ex, const double* Ey, int nx, int ny,
-                               double dx, double dy, double dt, bool use_device = true);
+void advance_magnetic_field_pc(double* Bz,
+                               const double* Ex, const double* Ey,
+                               int nx, int ny,
+                               double dx, double dy,
+                               double dt,
+                               bool use_device = true);
 
 // ============================================================================
 // Ampere-Maxwell Law (Full Ampere's Law with Displacement Current)
@@ -220,9 +242,13 @@ void advance_magnetic_field_pc(double* Bz, const double* Ex, const double* Ey, i
  * @param[in] dt Timestep
  * @param[in] use_device If true, arrays are on device (GPU)
  */
-void advance_electric_field_ampere(double* Ex, double* Ey, const double* Bz, const double* Jx,
-                                   const double* Jy, int nx, int ny, double dx, double dy,
-                                   double dt, bool use_device = true);
+void advance_electric_field_ampere(double* Ex, double* Ey,
+                                   const double* Bz,
+                                   const double* Jx, const double* Jy,
+                                   int nx, int ny,
+                                   double dx, double dy,
+                                   double dt,
+                                   bool use_device = true);
 
 // ============================================================================
 // Energy Conservation & Monitoring
@@ -242,8 +268,10 @@ void advance_electric_field_ampere(double* Ex, double* Ey, const double* Bz, con
  *
  * @return Total electromagnetic energy (integrated over domain)
  */
-double compute_electromagnetic_energy(const double* Ex, const double* Ey, const double* Bz, int nx,
-                                      int ny, double dx, double dy, const MPIDomainState& mpi_state,
+double compute_electromagnetic_energy(const double* Ex, const double* Ey, const double* Bz,
+                                      int nx, int ny,
+                                      double dx, double dy,
+                                      const MPIDomainState& mpi_state,
                                       bool use_device = true);
 
 /**
@@ -258,8 +286,10 @@ double compute_electromagnetic_energy(const double* Ex, const double* Ey, const 
  * @param[in] nx, ny Grid dimensions
  * @param[in] use_device If true, arrays are on device (GPU)
  */
-void compute_poynting_vector(const double* Ex, const double* Ey, const double* Bz, double* Sx,
-                             double* Sy, int nx, int ny, bool use_device = true);
+void compute_poynting_vector(const double* Ex, const double* Ey, const double* Bz,
+                             double* Sx, double* Sy,
+                             int nx, int ny,
+                             bool use_device = true);
 
 /**
  * @brief Verify energy conservation
@@ -277,8 +307,11 @@ void compute_poynting_vector(const double* Ex, const double* Ey, const double* B
  * @return Relative energy balance error
  */
 double verify_energy_conservation(const double* Ex, const double* Ey, const double* Bz,
-                                  const double* Jx, const double* Jy, int nx, int ny, double dx,
-                                  double dy, double dt, bool use_device = true);
+                                  const double* Jx, const double* Jy,
+                                  int nx, int ny,
+                                  double dx, double dy,
+                                  double dt,
+                                  bool use_device = true);
 
 // ============================================================================
 // Diagnostics & Output
@@ -293,8 +326,11 @@ double verify_energy_conservation(const double* Ex, const double* Ey, const doub
  * @param[in] total_energy Electromagnetic energy
  * @param[in] energy_conservation_error Relative error in energy balance
  */
-void print_ampere_stats(const FieldArrays& fields, const MPIDomainState& mpi_state,
-                        int iteration_count, double total_energy,
-                        double energy_conservation_error = -1.0);
+void print_ampere_stats(const FieldArrays& fields,
+                       const MPIDomainState& mpi_state,
+                       int iteration_count,
+                       double total_energy,
+                       double energy_conservation_error = -1.0);
 
 } // namespace jericho
+

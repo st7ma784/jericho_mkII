@@ -68,6 +68,127 @@ mpirun -np 4 ./jericho_mkII config.toml
 mpirun -np 16 --hostfile hosts ./jericho_mkII config.toml
 ```
 
+## 🎨 Real-Time Web Visualization
+
+Jericho Mk II includes a **real-time web interface** for monitoring simulations as they run!
+
+![Web Interface](docs/source/_static/web_interface_preview.png)
+
+### Features
+
+- 🌊 **Electromagnetic Fields** - Live heatmaps of Ex, Ey, Bz with vector overlays
+- ⚛️ **Particle Distribution** - Real-time particle positions colored by type or velocity
+- 📊 **Energy Diagnostics** - Time-series plots of energy conservation
+- 🔄 **Phase Space** - Velocity distribution analysis (Vx, Vy)
+- ⚡ **Current Density** - Electric current flow visualization (|J|, Jx, Jy, Jz)
+- 🌊 **Plasma Flow** - Bulk velocity field with streamlines or vector arrows
+- ⚛️ **Charge Density** - Net charge distribution with contour lines
+- 🌡️ **Pressure & Temperature** - Thermal, magnetic pressure, and plasma β
+- 🔲 **Boundary Fluxes** - Particle inflow/outflow at domain boundaries
+
+### Quick Start
+
+```bash
+# Terminal 1: Run simulation
+./jericho_mkII config.toml
+
+# Terminal 2: Start web server
+cd web
+pip install -r requirements.txt
+python server.py --output-dir ../output
+
+# Open browser to http://localhost:8888
+```
+
+The web interface automatically streams new data as HDF5 files are written!
+
+### Usage
+
+```bash
+# Basic usage
+cd web
+python server.py --output-dir ../output --port 8888
+
+# Monitor specific simulation
+python server.py --output-dir ../outputs/reconnection_run_01
+
+# Custom host (for remote access)
+python server.py --host 0.0.0.0 --port 8888
+```
+
+### Interactive Controls
+
+**Electromagnetic Fields Panel:**
+- Switch between Ex, Ey, Bz, |E|, |B|, current density, charge density
+- Toggle vector field overlay
+- Real-time colorbar scaling
+
+**Particle Distribution Panel:**
+- Color by type (ions/electrons) or velocity magnitude
+- Enable motion trails for particle tracking
+- Automatic downsampling for large particle counts
+
+**Current Density Panel:**
+- View |J| magnitude or individual components (Jx, Jy, Jz)
+- Identifies current sheets and reconnection regions
+
+**Plasma Flow Panel:**
+- Bulk velocity field visualization
+- Toggle between vector arrows and streamlines
+- Switch between flow speed and vorticity (∇ × v)
+
+**Charge Density Panel:**
+- Net charge distribution (ρ = ions - electrons)
+- Toggle contour lines at ρ = 0
+- Diagnose charge separation
+
+**Pressure Panel:**
+- Thermal pressure (P = nkT)
+- Magnetic pressure (B²/2μ₀)
+- Total pressure and plasma β ratio
+
+**Boundary Conditions Panel:**
+- Real-time particle flux at boundaries
+- Color-coded: Green (inflow), Red (outflow), Cyan (periodic)
+- Particle counts crossing each boundary
+
+### Performance
+
+The web server automatically optimizes for browser display:
+- Field grids downsampled to 512×512 maximum
+- Particles limited to 5,000 displayed (randomly sampled from full dataset)
+- Update rate: ~2 Hz (configurable)
+- WebSocket streaming for low latency
+
+### Browser Compatibility
+
+- ✅ Chrome/Edge (recommended)
+- ✅ Firefox
+- ✅ Safari
+- ⚠️ Mobile (limited - large data transfers)
+
+### Physics Interpretation
+
+See [`web/VISUALIZATION_GUIDE.md`](web/VISUALIZATION_GUIDE.md) for detailed explanation of:
+- How to read each visualization
+- Physical interpretation of features
+- Identifying magnetic reconnection signatures
+- Understanding phase space distributions
+- Energy conservation validation
+- Current sheet diagnostics
+
+### Demo Mode
+
+Try the interface without running a simulation:
+
+```bash
+cd web
+python -m http.server 8889
+# Open http://localhost:8889/demo.html
+```
+
+The demo shows synthetic reconnection data with all visualization features.
+
 ## Architecture Overview
 
 ```
@@ -139,22 +260,36 @@ jericho_mkII/
 ├── src/              # CPU host code
 │   ├── main.cpp
 │   ├── config.cpp
-│   └── io.cpp
+│   └── io_manager.cpp
 ├── cuda/             # GPU device code
 │   ├── particles.cu  # Particle kernels
 │   ├── fields.cu     # Field update kernels
-│   ├── boundaries.cu # Boundary condition kernels
-│   └── p2g.cu        # Particle-to-grid kernels
+│   └── boundaries.cu # Boundary condition kernels
 ├── include/          # Header files
 │   ├── particle_buffer.h
 │   ├── field_arrays.h
 │   ├── mpi_manager.h
 │   └── config.h
+├── web/              # Real-time web visualization
+│   ├── server.py     # WebSocket server
+│   ├── index.html    # Main interface
+│   ├── demo.html     # Standalone demo
+│   ├── static/
+│   │   └── visualization.js
+│   ├── requirements.txt
+│   ├── README.md
+│   └── VISUALIZATION_GUIDE.md
 ├── docs/             # Sphinx documentation
-│   ├── source/
-│   └── conf.py
+│   ├── *.rst         # Documentation files
+│   ├── api/          # API reference
+│   ├── conf.py
+│   └── Makefile
 ├── tests/            # Unit tests
 ├── examples/         # Example configs
+│   ├── reconnection.toml
+│   └── minimal_test.toml
+├── inputs/           # Production configs
+├── outputs/          # Simulation results
 └── scripts/          # Utilities
 ```
 
@@ -162,11 +297,17 @@ jericho_mkII/
 
 Full documentation available at: https://st7ma784.github.io/jericho_mkII/
 
-- **[Getting Started](docs/source/getting_started.rst)** - Installation and first run
-- **[User Guide](docs/source/user_guide.rst)** - Configuration and usage
-- **[Developer Guide](docs/source/developer_guide.rst)** - Contributing and internals
-- **[API Reference](docs/source/api.rst)** - Code documentation
-- **[Performance Tuning](docs/source/performance.rst)** - Optimization tips
+- **[Getting Started](docs/getting_started.rst)** - Installation and first run
+- **[Configuration Guide](docs/configuration.rst)** - Complete TOML reference
+- **[Running Simulations](docs/running_simulations.rst)** - Usage and examples
+- **[Architecture](docs/architecture.rst)** - Physics and CS implementation
+- **[CUDA Kernels](docs/cuda_kernels.rst)** - GPU optimization details
+- **[MPI Parallelism](docs/mpi_parallelism.rst)** - Multi-GPU scaling
+- **[Performance Tuning](docs/performance_tuning.rst)** - Optimization guide
+- **[Output Formats](docs/output_formats.rst)** - HDF5 file structure and analysis
+- **[Web Visualization](web/VISUALIZATION_GUIDE.md)** - Real-time monitoring guide
+- **[API Reference](docs/api/)** - Code documentation
+- **[Troubleshooting](docs/troubleshooting.rst)** - Common issues and solutions
 
 ## Citation
 
