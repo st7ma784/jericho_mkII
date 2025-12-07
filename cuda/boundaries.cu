@@ -145,7 +145,7 @@ GLOBAL void apply_boundaries_kernel(double* x, double* y, double* vx, double* vy
     if (remove) {
         active[i] = false;
         removal_flags[i] = true;
-        atomicAdd(n_removed, 1);
+        atomicAdd(reinterpret_cast<unsigned long long int*>(n_removed), 1ULL);
     } else {
         x[i] = px;
         y[i] = py;
@@ -186,7 +186,7 @@ GLOBAL void inject_particles_kernel(double* x, double* y, double* vx, double* vy
         return;
 
     // Get insertion index atomically
-    size_t idx = atomicAdd(insert_index, 1);
+    size_t idx = atomicAdd(reinterpret_cast<unsigned long long int*>(insert_index), 1ULL);
 
     // Random number generation (simple LCG for demo)
     unsigned int rng_state = seed + i * 1103515245;
