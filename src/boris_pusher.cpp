@@ -91,33 +91,42 @@ void advance_particles_boris(
         double ex = interpolate_field(Ex, x, y, dx, dy, nx, ny);
         double ey = interpolate_field(Ey, x, y, dx, dy, nx, ny);
         double bz = interpolate_field(Bz, x, y, dx, dy, nx, ny);
-        
-        // --- STEP 1: Half-step electric field acceleration ---
-        double vx_minus = vx + half_qm_dt * ex;
-        double vy_minus = vy + half_qm_dt * ey;
-        
-        // --- STEP 2: Magnetic field rotation (Boris algorithm) ---
-        // Rotation angle: ω = (q/m)*B*dt
-        double omega_z = qm * bz * dt;  // Full rotation angle for this timestep
-        
-        // Compute rotation parameters using angle-doubling formula
-        // For rotation by angle ω around z-axis:
-        // v_new = v_old + (2*tan(ω/2)) / (1 + tan²(ω/2)) * (v_old × ω_hat)
-        //
-        // Simplified for 2D (Bz only):
-        // tan(ω/2) computed using std::tan for numerical stability
-        double half_omega = omega_z / 2.0;
-        double tan_half_omega = std::tan(half_omega);
-        
-        // Perpendicular component of velocity gets rotated
-        // v_perp' = v_perp + 2*tan(ω/2) * (v_perp × ω_hat)
-        // For 2D with B = (0, 0, Bz): cross product (vx, vy, 0) × (0, 0, 1) = (vy, -vx, 0)
-        double vx_rot = vx_minus + 2.0 * tan_half_omega * vy_minus;
-        double vy_rot = vy_minus - 2.0 * tan_half_omega * vx_minus;
-        
-        // --- STEP 3: Half-step electric field acceleration ---
-        particles.vx[i] = vx_rot + half_qm_dt * ex;
-        particles.vy[i] = vy_rot + half_qm_dt * ey;
+
+        // Rotating frame parameters
+        double Omega = config.Omega;
+        double half_Omega_dt = 0.5 * Omega * dt;
+        double coriolis_factor = (config.enable_rotating_frame && config.enable_coriolis) ? 1.0 : 0.0;
+        double centrifugal_factor = (config.enable_rotating_frame && config.enable_centrifugal) ? 1.0 : 0.0;
+
+        // --- STEP 1: Half-step electric field + centrifugal acceleration ---
+        // Centrifugal: a = Ω²·r → Δv = Ω²·r·dt
+        double vx_minus = vx + half_qm_dt * ex + centrifugal_factor * half_Omega_dt * Omega * x;
+        double vy_minus = vy + half_qm_dt * ey + centrifugal_factor * half_Omega_dt * Omega * y;
+
+        // --- STEP 2: Magnetic + Coriolis rotation (Boris algorithm) ---
+        // Magnetic rotation angle: ω_B = (q/m)·B_z·dt
+        double omega_B = qm * bz * dt;
+        double half_omega_B = omega_B / 2.0;
+        double t_B = std::tan(half_omega_B);
+        double s_B = 2.0 * t_B / (1.0 + t_B * t_B);
+
+        // Coriolis rotation angle: ω_C = Ω·dt
+        // Coriolis is added to magnetic rotation
+        double t_C = std::tan(half_Omega_dt);
+        double s_C = 2.0 * t_C / (1.0 + t_C * t_C);
+
+        // Combined rotation (Method from tidy_jeri Boris A)
+        // First rotation: v' = v⁻ + (v⁻ × t)
+        double vx_prime = vx_minus + vy_minus * t_B + coriolis_factor * vy_minus * t_C;
+        double vy_prime = vy_minus - vx_minus * t_B - coriolis_factor * vx_minus * t_C;
+
+        // Second rotation: v⁺ = v⁻ + (v' × s)
+        double vx_plus = vx_minus + vy_prime * s_B + coriolis_factor * vy_prime * s_C;
+        double vy_plus = vy_minus - vx_prime * s_B - coriolis_factor * vx_prime * s_C;
+
+        // --- STEP 3: Half-step electric field + centrifugal acceleration ---
+        particles.vx[i] = vx_plus + half_qm_dt * ex + centrifugal_factor * half_Omega_dt * Omega * x;
+        particles.vy[i] = vy_plus + half_qm_dt * ey + centrifugal_factor * half_Omega_dt * Omega * y;
     }
 }
 

@@ -36,6 +36,12 @@ struct BorisConfig {
     int max_subcycles = 10;         ///< Max subcycles if enabled
     double max_rotation = M_PI / 4; ///< Max rotation per subcycle [rad]
     bool use_device = false;        ///< Use GPU if available
+
+    // Rotating frame physics (NEW)
+    bool enable_rotating_frame = false; ///< Enable rotating frame
+    double Omega = 0.0;                  ///< Angular velocity [rad/s]
+    bool enable_coriolis = true;         ///< Enable Coriolis force
+    bool enable_centrifugal = true;      ///< Enable centrifugal force
 };
 
 /**
