@@ -4,11 +4,11 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 option(USE_CPU "Build for CPU-only (no CUDA required)" OFF)
 
 if(USE_CPU)
-    project(jericho_mkII LANGUAGES CXX)
+    project(jericho_mkII LANGUAGES C CXX)
     message(STATUS "Building for CPU (CUDA disabled)")
     add_compile_definitions(USE_CPU)
 else()
-    project(jericho_mkII LANGUAGES CXX CUDA)
+    project(jericho_mkII LANGUAGES C CXX CUDA)
     message(STATUS "Building for GPU (CUDA enabled)")
 endif()
 

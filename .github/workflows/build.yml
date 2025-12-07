@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: |
         apt-get update
-        apt-get install -y cmake g++ libopenmpi-dev
+        apt-get install -y cmake g++ libopenmpi-dev libhdf5-dev
 
     - name: Configure CMake
       run: |
